@@ -7,26 +7,26 @@ import (
 	//"fmt"
 )
 
-func createRandomGraph(edges int64, undirected bool) (ug *graph) {
-	ug = &graph{
-		vertexEdges: make(map[uint64]map[uint64]bool),
+func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
+	ug = &Graph{
+		VertexEdges: make(map[uint64]map[uint64]bool),
 	}
 
 	for i := int64(0); i < edges; i++ {
 		from := uint64(rand.Int63() % edges)
 		to := uint64(rand.Int63() % edges)
 		if from != to {
-			if _, ok := ug.vertexEdges[from]; ok {
-				ug.vertexEdges[from][to] = true
+			if _, ok := ug.VertexEdges[from]; ok {
+				ug.VertexEdges[from][to] = true
 			} else {
-				ug.vertexEdges[from] = map[uint64]bool{to: true}
+				ug.VertexEdges[from] = map[uint64]bool{to: true}
 			}
 
 			if undirected {
-				if _, ok := ug.vertexEdges[to]; ok {
-					ug.vertexEdges[to][from] = true
+				if _, ok := ug.VertexEdges[to]; ok {
+					ug.VertexEdges[to][from] = true
 				} else {
-					ug.vertexEdges[to] = map[uint64]bool{from: true}
+					ug.VertexEdges[to] = map[uint64]bool{from: true}
 				}
 			}
 		}
