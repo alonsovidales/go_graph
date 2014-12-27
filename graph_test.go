@@ -162,3 +162,32 @@ func TestUndBFS(t *testing.T) {
 		t.Error("Expeceted distances from Zero:", expectedDistances, "but:", dist, "obtained.")
 	}
 }
+
+func TestUndBipartite(t *testing.T) {
+	gr := GetUndirected(
+		[][2]uint64{
+			[2]uint64{1, 6},
+			[2]uint64{2, 8},
+			[2]uint64{3, 8},
+			[2]uint64{4, 6},
+			[2]uint64{4, 9},
+			[2]uint64{5, 8},
+			[2]uint64{5, 9},
+			[2]uint64{7, 2},
+			[2]uint64{7, 3},
+
+			[2]uint64{10, 11},
+			[2]uint64{11, 12},
+			[2]uint64{12, 13},
+			[2]uint64{10, 12},
+		},
+	)
+
+	if !gr.IsBipartite(1) {
+		t.Error("The graph:", gr.VertexEdges, "is bipartite from vertex 1, but was not detected")
+	}
+
+	if gr.IsBipartite(10) {
+		t.Error("The graph:", gr.VertexEdges, "souldn't be bipartite from edge 10")
+	}
+}

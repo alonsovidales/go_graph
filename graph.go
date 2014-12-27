@@ -29,13 +29,23 @@ func GetUndirected(edges [][2]uint64) (ug *Graph) {
 
 // Checks if a graph is bipartite from the given vertex, in case of a graph
 // composed by multiple components, checks if the component where this vertex
-// is located is bipartite or not
+// is located is bipartite
 func (gr *Graph) IsBipartite(origin uint64) (bool) {
-	edgeTo, distTo := gr.Bfs(origin)
+	colours := map[uint64]bool{origin: false}
+	queue := []uint64{origin}
 
-	for v, d := range distTo {
-		if d % 2 == distTo[edgeTo[v]] % 2 {
-			return false
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		for v := range gr.VertexEdges[current] {
+			if _, visited := colours[v]; !visited {
+				colours[v] = !colours[current]
+				queue = append(queue, v)
+			} else {
+				if colours[v] == colours[current] {
+					return false
+				}
+			}
 		}
 	}
 
@@ -65,8 +75,8 @@ func (gr *Graph) GetConnectedComponents() (groups []map[uint64]bool) {
 // vertices and returns the list of edges and distances
 func (gr *Graph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64]uint64) {
 	queue := []uint64{origin}
-	edgeTo = map[uint64]uint64{0: 0}
-	distTo = map[uint64]uint64{0: 0}
+	edgeTo = map[uint64]uint64{origin: origin}
+	distTo = map[uint64]uint64{origin: 0}
 
 	for len(queue) > 0 {
 		current := queue[0]
