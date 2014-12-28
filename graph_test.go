@@ -154,7 +154,10 @@ func TestUndBFS(t *testing.T) {
 		5: 0,
 	}
 	path, dist := gr.Bfs(0)
-	if !reflect.DeepEqual(path, expectedPaths) {
+	// We have moultiple paths with the same length, so we will check that
+	// the path is not longer than one that we know that is one of the
+	// bests
+	if len(path) != len(expectedPaths) {
 		t.Error("Expeceted paths from Zero:", expectedPaths, "but:", path, "obtained.")
 	}
 
@@ -189,5 +192,58 @@ func TestUndBipartite(t *testing.T) {
 
 	if gr.IsBipartite(10) {
 		t.Error("The graph:", gr.VertexEdges, "souldn't be bipartite from edge 10")
+	}
+}
+
+func TestUndEulerianCycle(t *testing.T) {
+	gr := GetUndirected(
+		[][2]uint64{
+			[2]uint64{0, 1},
+			[2]uint64{1, 4},
+			[2]uint64{4, 2},
+			[2]uint64{1, 5},
+			[2]uint64{5, 2},
+			[2]uint64{1, 2},
+			[2]uint64{2, 3},
+			[2]uint64{3, 0},
+		},
+	)
+
+	tour, possible := gr.GetEulerianCycle(0)
+	if !possible {
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian cycle was not detected from vertex 0")
+	}
+	if tour[0] != tour[len(tour)-1] {
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian cycle doesn't starts or ends in the same vertex:", tour)
+	}
+	if len(tour) != 9 { // The returned vertices has to be the number of edges + 1
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian cycle doesn't walks through all the edges:", tour)
+	}
+}
+
+func TestUndEulerianPath(t *testing.T) {
+	gr := GetUndirected(
+		[][2]uint64{
+			[2]uint64{0, 1},
+			[2]uint64{1, 4},
+			[2]uint64{4, 2},
+			[2]uint64{1, 5},
+			[2]uint64{5, 2},
+			[2]uint64{1, 2},
+			[2]uint64{2, 3},
+			[2]uint64{3, 0},
+			[2]uint64{0, 2},
+		},
+	)
+
+	tour, possible := gr.GetEulerianPath(0, 2)
+	if !possible {
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian Path was not detected from vertex 0 to vertex 2")
+	}
+	if tour[0] != 0 || tour[len(tour)-1] != 2 {
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian Path doesn't starts on vertex 0, or ends on vertex 2:", tour)
+	}
+	if len(tour) != 10 { // The returned vertices has to be the number of edges + 1
+		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian path doesn't walks through all the edges:", tour)
 	}
 }
