@@ -2,31 +2,79 @@ package graphs
 
 //import "fmt"
 
-// Graph Data strcture used to represent a graph, the VertexEdges var is a map
-// where each key is a vertex, and the value a map where the keys are the
-// vertices that can be reached from the main key vertex, the internal map is
-// used as a set
-type Graph struct {
+// UnWeightGraph Data strcture used to represent a graph, the VertexEdges var
+// is a map where each key is a vertex, and the value a map where the keys are
+// the vertices that can be reached from the main key vertex, the internal map
+// is used as a set
+type UnWeightGraph struct {
+	Vertices map[uint64]bool
 	VertexEdges map[uint64]map[uint64]bool
+	Undirected  bool
 }
 
-// GetUndirected Returns an undirected graph containing the specified edges
-func GetUndirected(edges [][2]uint64) (ug *Graph) {
-	ug = &Graph{
+// UnWeightGraph Returns an unweighted graph containing the specified edges,
+// use the second boolean parameter in order to specify if the graph to be
+// constructed is directed (true) or undirected (false)
+func GetUnWeightGraph(edges [][2]uint64, undirected bool) (ug *UnWeightGraph) {
+	ug = &UnWeightGraph{
+		Vertices: make(map[uint64]bool),
 		VertexEdges: make(map[uint64]map[uint64]bool),
+		Undirected: undirected,
 	}
 
 	for _, edge := range edges {
+		ug.Vertices[edge[0]] = true
+		ug.Vertices[edge[1]] = true
 		if _, ok := ug.VertexEdges[edge[0]]; ok {
 			ug.VertexEdges[edge[0]][edge[1]] = true
 		} else {
 			ug.VertexEdges[edge[0]] = map[uint64]bool{edge[1]: true}
 		}
-		if _, ok := ug.VertexEdges[edge[1]]; ok {
-			ug.VertexEdges[edge[1]][edge[0]] = true
-		} else {
-			ug.VertexEdges[edge[1]] = map[uint64]bool{edge[0]: true}
+		if undirected {
+			if _, ok := ug.VertexEdges[edge[1]]; ok {
+				ug.VertexEdges[edge[1]][edge[0]] = true
+			} else {
+				ug.VertexEdges[edge[1]] = map[uint64]bool{edge[0]: true}
+			}
 		}
+	}
+
+	return
+}
+
+
+func (gr *UnWeightGraph) findFirstVertex() (v uint64, success bool) {
+	vertexLoop: for v = range gr.VertexEdges {
+		for _, edge := range gr.VertexEdges {
+			if _, ok := edge[v]; ok {
+				continue vertexLoop
+			}
+		}
+
+		return v, true
+	}
+
+	return v, false
+}
+
+func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
+	if gr.Undirected {
+		return nil, false
+	}
+
+	orig, success := gr.findFirstVertex()
+	if !success {
+		return
+	}
+
+	order = make([]uint64, len(gr.Vertices))
+	group := make(map[uint64]bool)
+	pos := uint64(0)
+	gr.dfs(orig, group, order, &pos)
+	for i := 0; i < len(order) / 2; i++ {
+		aux := order[i]
+		order[i] = order[len(order)-i-1]
+		order[len(order)-i-1] = aux
 	}
 
 	return
@@ -35,7 +83,7 @@ func GetUndirected(edges [][2]uint64) (ug *Graph) {
 // IsBipartite Checks if a graph is bipartite from the given vertex, in case of
 // a graph composed by multiple components, checks if the component where this
 // vertex is located is bipartite
-func (gr *Graph) IsBipartite(origin uint64) bool {
+func (gr *UnWeightGraph) IsBipartite(origin uint64) bool {
 	colours := map[uint64]bool{origin: false}
 	queue := []uint64{origin}
 
@@ -58,8 +106,8 @@ func (gr *Graph) IsBipartite(origin uint64) bool {
 }
 
 // Copy Returns a copy allocated in a different memory space of the graph
-func (gr *Graph) Copy() (cp *Graph) {
-	cp = &Graph{
+func (gr *UnWeightGraph) Copy() (cp *UnWeightGraph) {
+	cp = &UnWeightGraph{
 		VertexEdges: make(map[uint64]map[uint64]bool),
 	}
 	for k, e := range gr.VertexEdges {
@@ -79,7 +127,7 @@ func (gr *Graph) Copy() (cp *Graph) {
 // on the "end" vertex walks through all the edges on the graph.
 // The second returned parameter specifies if existst or not a Eulerian path
 // on the graph
-func (gr *Graph) EulerianPath(orig uint64, end uint64) (path []uint64, success bool) {
+func (gr *UnWeightGraph) EulerianPath(orig uint64, end uint64) (path []uint64, success bool) {
 	// For an Eulerian Path all the vertices but the origin and ending
 	// vertices has to have a even degree, we will check in
 	// EulerianCycle the even degree of all the vertices, so now we only
@@ -105,7 +153,7 @@ func (gr *Graph) EulerianPath(orig uint64, end uint64) (path []uint64, success b
 // same origin and destination can be specified in order to calculate a
 // Hamilton tour
 // This is a NP-complete problem
-func (gr *Graph) HamiltonianPath(orig uint64, dest uint64) (path []uint64, success bool) {
+func (gr *UnWeightGraph) HamiltonianPath(orig uint64, dest uint64) (path []uint64, success bool) {
 	visited := make(map[uint64]bool)
 	if orig != dest {
 		visited[orig] = true
@@ -115,7 +163,7 @@ func (gr *Graph) HamiltonianPath(orig uint64, dest uint64) (path []uint64, succe
 	return gr.hamiltonianPath(orig, &dest, visited, path)
 }
 
-func (gr *Graph) hamiltonianPath(orig uint64, dest *uint64, visited map[uint64]bool, path []uint64) ([]uint64, bool) {
+func (gr *UnWeightGraph) hamiltonianPath(orig uint64, dest *uint64, visited map[uint64]bool, path []uint64) ([]uint64, bool) {
 	if len(visited) == len(gr.VertexEdges) {
 		if path[len(path)-1] == *dest {
 			return path, true
@@ -143,7 +191,7 @@ func (gr *Graph) hamiltonianPath(orig uint64, dest *uint64, visited map[uint64]b
 // vertex walks through all the edges on the graph.
 // The second returned parameter specifies if existst or not a Eulerian cycle
 // on the graph
-func (gr *Graph) EulerianCycle(orig uint64) (tour []uint64, success bool) {
+func (gr *UnWeightGraph) EulerianCycle(orig uint64) (tour []uint64, success bool) {
 	// For an Eulerian cirtuit all the vertices has to have a even degree
 	for _, e := range gr.VertexEdges {
 		if len(e)%2 != 0 {
@@ -180,12 +228,12 @@ func (gr *Graph) EulerianCycle(orig uint64) (tour []uint64, success bool) {
 // vertices, each element on the slice is a set of interconnected vertices but
 // without connection with any other vertex in any other returned set of
 // vertices
-func (gr *Graph) ConnectedComponents() (groups []map[uint64]bool) {
+func (gr *UnWeightGraph) ConnectedComponents() (groups []map[uint64]bool) {
 	usedVertex := make(map[uint64]bool)
 	for v := range gr.VertexEdges {
 		if _, used := usedVertex[v]; !used {
 			group := make(map[uint64]bool)
-			gr.dfs(v, group)
+			gr.dfs(v, group, nil, nil)
 			groups = append(groups, group)
 			for k := range group {
 				usedVertex[k] = true
@@ -198,7 +246,7 @@ func (gr *Graph) ConnectedComponents() (groups []map[uint64]bool) {
 
 // Bfs Calculates the shortest path from the origin vertex to all the connected
 // vertices and returns the list of edges and distances
-func (gr *Graph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64]uint64) {
+func (gr *UnWeightGraph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64]uint64) {
 	queue := []uint64{origin}
 	edgeTo = map[uint64]uint64{origin: origin}
 	distTo = map[uint64]uint64{origin: 0}
@@ -225,18 +273,22 @@ func (gr *Graph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64
 //	- http://en.wikipedia.org/wiki/Depth-first_search
 // The Tremaux's algorithm is used to perform this search:
 //	- http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
-func (gr *Graph) Dfs(origin uint64) (usedVertex map[uint64]bool) {
+func (gr *UnWeightGraph) Dfs(origin uint64) (usedVertex map[uint64]bool) {
 	usedVertex = make(map[uint64]bool)
-	gr.dfs(origin, usedVertex)
+	gr.dfs(origin, usedVertex, nil, nil)
 
 	return
 }
 
-func (gr *Graph) dfs(origin uint64, usedVertex map[uint64]bool) {
+func (gr *UnWeightGraph) dfs(origin uint64, usedVertex map[uint64]bool, order []uint64, pos *uint64) {
 	usedVertex[origin] = true
 	for v := range gr.VertexEdges[origin] {
 		if _, visited := usedVertex[v]; !visited {
-			gr.dfs(v, usedVertex)
+			gr.dfs(v, usedVertex, order, pos)
 		}
+	}
+	if order != nil {
+		order[*pos] = origin
+		*pos++
 	}
 }

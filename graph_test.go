@@ -7,8 +7,8 @@ import (
 	//"fmt"
 )
 
-func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
-	ug = &Graph{
+func createRandomGraph(edges int64, undirected bool) (ug *UnWeightGraph) {
+	ug = &UnWeightGraph{
 		VertexEdges: make(map[uint64]map[uint64]bool),
 	}
 
@@ -38,7 +38,7 @@ func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
 // This test checks if we can get by DFS the two paths that connects all the
 // elements in two separate graphs without any connection between them
 func TestUndDFS(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{0, 1},
 			[2]uint64{0, 2},
@@ -51,6 +51,7 @@ func TestUndDFS(t *testing.T) {
 			[2]uint64{6, 9},
 			[2]uint64{9, 5},
 		},
+		true,
 	)
 
 	expectedFromZero := map[uint64]bool{
@@ -75,7 +76,7 @@ func TestUndDFS(t *testing.T) {
 }
 
 func TestUndConnectedComponents(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{0, 1},
 			[2]uint64{0, 2},
@@ -88,6 +89,7 @@ func TestUndConnectedComponents(t *testing.T) {
 			[2]uint64{6, 9},
 			[2]uint64{9, 5},
 		},
+		true,
 	)
 
 	expected := []map[uint64]bool{
@@ -124,7 +126,7 @@ compLoop:
 }
 
 func TestUndBFS(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{0, 1},
 			[2]uint64{0, 2},
@@ -135,6 +137,7 @@ func TestUndBFS(t *testing.T) {
 			[2]uint64{4, 3},
 			[2]uint64{3, 5},
 		},
+		true,
 	)
 
 	expectedDistances := map[uint64]uint64{
@@ -167,7 +170,7 @@ func TestUndBFS(t *testing.T) {
 }
 
 func TestUndBipartite(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{1, 6},
 			[2]uint64{2, 8},
@@ -184,6 +187,7 @@ func TestUndBipartite(t *testing.T) {
 			[2]uint64{12, 13},
 			[2]uint64{10, 12},
 		},
+		true,
 	)
 
 	if !gr.IsBipartite(1) {
@@ -196,7 +200,7 @@ func TestUndBipartite(t *testing.T) {
 }
 
 func TestUndEulerianCycle(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{0, 1},
 			[2]uint64{1, 4},
@@ -207,6 +211,7 @@ func TestUndEulerianCycle(t *testing.T) {
 			[2]uint64{2, 3},
 			[2]uint64{3, 0},
 		},
+		true,
 	)
 
 	tour, possible := gr.EulerianCycle(0)
@@ -222,7 +227,7 @@ func TestUndEulerianCycle(t *testing.T) {
 }
 
 func TestUndEulerianPath(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{0, 1},
 			[2]uint64{1, 4},
@@ -234,6 +239,7 @@ func TestUndEulerianPath(t *testing.T) {
 			[2]uint64{3, 0},
 			[2]uint64{0, 2},
 		},
+		true,
 	)
 
 	tour, possible := gr.EulerianPath(0, 2)
@@ -249,7 +255,7 @@ func TestUndEulerianPath(t *testing.T) {
 }
 
 func TestUndHamiltonPath(t *testing.T) {
-	gr := GetUndirected(
+	gr := GetUnWeightGraph(
 		[][2]uint64{
 			[2]uint64{2, 3},
 			[2]uint64{3, 4},
@@ -286,6 +292,7 @@ func TestUndHamiltonPath(t *testing.T) {
 			[2]uint64{19, 20},
 			[2]uint64{20, 16},
 		},
+		true,
 	)
 
 	tour, possible := gr.HamiltonianPath(1, 2)
@@ -303,5 +310,57 @@ func TestUndHamiltonPath(t *testing.T) {
 	}
 	if len(tour) != len(gr.VertexEdges)+1 {
 		t.Error("Hamilton tour", tour, "doesn't covers all the vertices of the graph:", gr.VertexEdges)
+	}
+}
+
+func TestTopologicalOrder(t *testing.T) {
+	gr := GetUnWeightGraph(
+		[][2]uint64{
+			[2]uint64{0, 1},
+			[2]uint64{0, 5},
+			[2]uint64{0, 2},
+			[2]uint64{1, 4},
+			[2]uint64{5, 2},
+			[2]uint64{3, 2},
+			[2]uint64{3, 5},
+			[2]uint64{3, 4},
+			[2]uint64{3, 6},
+			[2]uint64{6, 0},
+			[2]uint64{6, 4},
+		},
+		false,
+	)
+
+	order, success := gr.TopologicalOrder()
+	if !success {
+		t.Error("Problem calculating topological order on graph:", gr.VertexEdges)
+	}
+	if len(order) != len(gr.Vertices) {
+		t.Error("The number of vertices in the specified order:", order, "doesn't match with the total vertices on the graph:", gr.Vertices)
+	}
+}
+
+func TestTopologicalCycle(t *testing.T) {
+	gr := GetUnWeightGraph(
+		[][2]uint64{
+			[2]uint64{0, 1},
+			[2]uint64{0, 5},
+			[2]uint64{0, 2},
+			[2]uint64{1, 4},
+			[2]uint64{5, 2},
+			[2]uint64{3, 2},
+			[2]uint64{3, 5},
+			[2]uint64{3, 4},
+			[2]uint64{3, 6},
+			[2]uint64{6, 0},
+			[2]uint64{6, 4},
+			[2]uint64{2, 3},
+		},
+		false,
+	)
+
+	_, success := gr.TopologicalOrder()
+	if success {
+		t.Error("Problem calculating topological order on graph:", gr.VertexEdges, "a graph with a cycle can't have topological order")
 	}
 }
