@@ -7,19 +7,19 @@ package graphs
 // the vertices that can be reached from the main key vertex, the internal map
 // is used as a set
 type UnWeightGraph struct {
-	Vertices map[uint64]bool
+	Vertices    map[uint64]bool
 	VertexEdges map[uint64]map[uint64]bool
 	Undirected  bool
 }
 
-// UnWeightGraph Returns an unweighted graph containing the specified edges,
+// GetUnWeightGraph Returns an unweighted graph containing the specified edges,
 // use the second boolean parameter in order to specify if the graph to be
 // constructed is directed (true) or undirected (false)
 func GetUnWeightGraph(edges [][2]uint64, undirected bool) (ug *UnWeightGraph) {
 	ug = &UnWeightGraph{
-		Vertices: make(map[uint64]bool),
+		Vertices:    make(map[uint64]bool),
 		VertexEdges: make(map[uint64]map[uint64]bool),
-		Undirected: undirected,
+		Undirected:  undirected,
 	}
 
 	for _, edge := range edges {
@@ -42,9 +42,9 @@ func GetUnWeightGraph(edges [][2]uint64, undirected bool) (ug *UnWeightGraph) {
 	return
 }
 
-
 func (gr *UnWeightGraph) findFirstVertex() (v uint64, success bool) {
-	vertexLoop: for v = range gr.VertexEdges {
+vertexLoop:
+	for v = range gr.VertexEdges {
 		for _, edge := range gr.VertexEdges {
 			if _, ok := edge[v]; ok {
 				continue vertexLoop
@@ -57,6 +57,11 @@ func (gr *UnWeightGraph) findFirstVertex() (v uint64, success bool) {
 	return v, false
 }
 
+// TopologicalOrder Calculates  the topological on directed graphs, where every
+// directed edge uv from vertex u to vertex v, u comes before v in the ordering
+// In case of doesn't be possible calculate the topological order of the graph
+// because of a cycle, or any other cause, the second parameter will return
+// false
 func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
 	if gr.Undirected {
 		return nil, false
@@ -71,7 +76,7 @@ func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
 	group := make(map[uint64]bool)
 	pos := uint64(0)
 	gr.dfs(orig, group, order, &pos)
-	for i := 0; i < len(order) / 2; i++ {
+	for i := 0; i < len(order)/2; i++ {
 		aux := order[i]
 		order[i] = order[len(order)-i-1]
 		order[len(order)-i-1] = aux
