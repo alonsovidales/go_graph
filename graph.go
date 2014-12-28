@@ -75,14 +75,14 @@ func (gr *Graph) Copy() (cp *Graph) {
 	return
 }
 
-// GetEulerianPath Calculates a path that starting on the "orig" vertex and ending
+// EulerianPath Calculates a path that starting on the "orig" vertex and ending
 // on the "end" vertex walks through all the edges on the graph.
 // The second returned parameter specifies if existst or not a Eulerian path
 // on the graph
-func (gr *Graph) GetEulerianPath(orig uint64, end uint64) (path []uint64, success bool) {
+func (gr *Graph) EulerianPath(orig uint64, end uint64) (path []uint64, success bool) {
 	// For an Eulerian Path all the vertices but the origin and ending
 	// vertices has to have a even degree, we will check in
-	// GetEulerianCycle the even degree of all the vertices, so now we only
+	// EulerianCycle the even degree of all the vertices, so now we only
 	// check the orig and end vertices
 	if orig != end && (len(gr.VertexEdges[orig])%2 == 0 || len(gr.VertexEdges[end])%2 == 0) {
 		return nil, false
@@ -92,7 +92,7 @@ func (gr *Graph) GetEulerianPath(orig uint64, end uint64) (path []uint64, succes
 	newGr := gr.Copy()
 	delete(newGr.VertexEdges[orig], end)
 	delete(newGr.VertexEdges[end], orig)
-	path, success = newGr.GetEulerianCycle(orig)
+	path, success = newGr.EulerianCycle(orig)
 	if !success {
 		return nil, false
 	}
@@ -101,11 +101,49 @@ func (gr *Graph) GetEulerianPath(orig uint64, end uint64) (path []uint64, succes
 	return
 }
 
-// GetEulerianCycle Calculates a cycle that starting and ending on the "orig"
+// HamiltonianPath Calculates a path that visits each vertex exactly once. A
+// same origin and destination can be specified in order to calculate a
+// Hamilton tour
+// This is a NP-complete problem
+func (gr *Graph) HamiltonianPath(orig uint64, dest uint64) (path []uint64, success bool) {
+	visited := make(map[uint64]bool)
+	if orig != dest {
+		visited[orig] = true
+	}
+	path = []uint64{orig}
+
+	return gr.hamiltonianPath(orig, &dest, visited, path)
+}
+
+func (gr *Graph) hamiltonianPath(orig uint64, dest *uint64, visited map[uint64]bool, path []uint64) ([]uint64, bool) {
+	if len(visited) == len(gr.VertexEdges) {
+		if path[len(path)-1] == *dest {
+			return path, true
+		}
+
+		return nil, false
+	}
+
+	for tv := range gr.VertexEdges[orig] {
+		if _, ok := visited[tv]; !ok && (*dest != tv || len(visited) == len(gr.VertexEdges)-1) {
+			visited[tv] = true
+			path = append(path, tv)
+			if path, found := gr.hamiltonianPath(tv, dest, visited, path); found {
+				return path, true
+			}
+			path = path[:len(path)-1]
+			delete(visited, tv)
+		}
+	}
+
+	return nil, false
+}
+
+// EulerianCycle Calculates a cycle that starting and ending on the "orig"
 // vertex walks through all the edges on the graph.
 // The second returned parameter specifies if existst or not a Eulerian cycle
 // on the graph
-func (gr *Graph) GetEulerianCycle(orig uint64) (tour []uint64, success bool) {
+func (gr *Graph) EulerianCycle(orig uint64) (tour []uint64, success bool) {
 	// For an Eulerian cirtuit all the vertices has to have a even degree
 	for _, e := range gr.VertexEdges {
 		if len(e)%2 != 0 {
@@ -138,11 +176,11 @@ func (gr *Graph) GetEulerianCycle(orig uint64) (tour []uint64, success bool) {
 	return tour, true
 }
 
-// GetConnectedComponents Returns a slice of maps where the keys are the
+// ConnectedComponents Returns a slice of maps where the keys are the
 // vertices, each element on the slice is a set of interconnected vertices but
 // without connection with any other vertex in any other returned set of
 // vertices
-func (gr *Graph) GetConnectedComponents() (groups []map[uint64]bool) {
+func (gr *Graph) ConnectedComponents() (groups []map[uint64]bool) {
 	usedVertex := make(map[uint64]bool)
 	for v := range gr.VertexEdges {
 		if _, used := usedVertex[v]; !used {

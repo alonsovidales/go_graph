@@ -106,7 +106,7 @@ func TestUndConnectedComponents(t *testing.T) {
 		},
 	}
 
-	comps := gr.GetConnectedComponents()
+	comps := gr.ConnectedComponents()
 	if len(comps) != len(expected) {
 		t.Error("We expected:", len(expected), "components, but:", len(comps), "found")
 	}
@@ -209,7 +209,7 @@ func TestUndEulerianCycle(t *testing.T) {
 		},
 	)
 
-	tour, possible := gr.GetEulerianCycle(0)
+	tour, possible := gr.EulerianCycle(0)
 	if !possible {
 		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian cycle was not detected from vertex 0")
 	}
@@ -236,7 +236,7 @@ func TestUndEulerianPath(t *testing.T) {
 		},
 	)
 
-	tour, possible := gr.GetEulerianPath(0, 2)
+	tour, possible := gr.EulerianPath(0, 2)
 	if !possible {
 		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian Path was not detected from vertex 0 to vertex 2")
 	}
@@ -245,5 +245,63 @@ func TestUndEulerianPath(t *testing.T) {
 	}
 	if len(tour) != 10 { // The returned vertices has to be the number of edges + 1
 		t.Error("For the specified graph:", gr.VertexEdges, "the Eulerian path doesn't walks through all the edges:", tour)
+	}
+}
+
+func TestUndHamiltonPath(t *testing.T) {
+	gr := GetUndirected(
+		[][2]uint64{
+			[2]uint64{2, 3},
+			[2]uint64{3, 4},
+			[2]uint64{4, 5},
+			[2]uint64{5, 6},
+			[2]uint64{6, 7},
+			[2]uint64{7, 8},
+			[2]uint64{8, 9},
+			[2]uint64{9, 10},
+			[2]uint64{10, 11},
+			[2]uint64{11, 2},
+
+			[2]uint64{1, 2},
+			[2]uint64{4, 12},
+			[2]uint64{6, 13},
+			[2]uint64{8, 14},
+			[2]uint64{10, 15},
+
+			[2]uint64{1, 12},
+			[2]uint64{12, 13},
+			[2]uint64{13, 14},
+			[2]uint64{14, 15},
+			[2]uint64{15, 1},
+
+			[2]uint64{11, 16},
+			[2]uint64{9, 20},
+			[2]uint64{7, 19},
+			[2]uint64{5, 18},
+			[2]uint64{3, 17},
+
+			[2]uint64{16, 17},
+			[2]uint64{17, 18},
+			[2]uint64{18, 19},
+			[2]uint64{19, 20},
+			[2]uint64{20, 16},
+		},
+	)
+
+	tour, possible := gr.HamiltonianPath(1, 2)
+
+	if !possible {
+		t.Error("Hamilton path not found for origin 1 and dest 2 on graph:", gr.VertexEdges)
+	}
+	if len(tour) != len(gr.VertexEdges) {
+		t.Error("Hamilton path", tour, "doesn't covers all the vertices of the graph:", gr.VertexEdges)
+	}
+
+	tour, possible = gr.HamiltonianPath(1, 1)
+	if !possible {
+		t.Error("Hamilton tour not found for origin 1 and dest 1 on graph:", gr.VertexEdges)
+	}
+	if len(tour) != len(gr.VertexEdges)+1 {
+		t.Error("Hamilton tour", tour, "doesn't covers all the vertices of the graph:", gr.VertexEdges)
 	}
 }
