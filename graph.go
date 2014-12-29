@@ -67,8 +67,10 @@ func (gr *UnWeightGraph) NewReversedGraph() (rev *UnWeightGraph) {
 // StronglyConnectedComponents Detects all the strongly connected components in
 // a directed graph and returns a map with the vertices as a key and the group
 // where the vertex belongs as value, and another slice of maps where each map
-// is usead as a set who groups the vertices by groups, the keys of the maps
+// is used as a set who groups the vertices by groups, the keys of the maps
 // are vertex number
+// The algorithm used is the Kosaraju-Sharir's algorithm:
+// 	- http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
 func (gr *UnWeightGraph) StronglyConnectedComponents() (components map[uint64]uint64, compGroups []map[uint64]bool) {
 	currentGroup := uint64(0)
 	components = make(map[uint64]uint64)
