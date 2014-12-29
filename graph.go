@@ -42,19 +42,12 @@ func GetUnWeightGraph(edges [][2]uint64, undirected bool) (ug *UnWeightGraph) {
 	return
 }
 
-func (gr *UnWeightGraph) findFirstVertex() (v uint64, success bool) {
-vertexLoop:
-	for v = range gr.VertexEdges {
-		for _, edge := range gr.VertexEdges {
-			if _, ok := edge[v]; ok {
-				continue vertexLoop
-			}
-		}
-
-		return v, true
+func (gr *UnWeightGraph) StronglyConnectedComponents() (order []uint64, success bool) {
+	if gr.Undirected {
+		return nil, false
 	}
 
-	return v, false
+	return
 }
 
 // TopologicalOrder Calculates  the topological on directed graphs, where every
@@ -67,20 +60,41 @@ func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
 		return nil, false
 	}
 
-	orig, success := gr.findFirstVertex()
-	if !success {
-		return
+	verticesToUse := make(map[uint64]bool)
+	for v := range gr.Vertices {
+		verticesToUse[v] = true
 	}
 
+	var orig uint64
+	orderPos := uint64(0)
 	order = make([]uint64, len(gr.Vertices))
 	group := make(map[uint64]bool)
-	pos := uint64(0)
-	gr.dfs(orig, group, order, &pos)
-	for i := 0; i < len(order)/2; i++ {
-		aux := order[i]
-		order[i] = order[len(order)-i-1]
-		order[len(order)-i-1] = aux
+	for len(verticesToUse) > 0 {
+		for orig = range verticesToUse { break }
+
+		orderAux := make([]uint64, len(gr.Vertices))
+		pos := uint64(0)
+		gr.dfs(orig, group, orderAux, &pos)
+
+		for i := uint64(0); i < pos; i++ {
+			orderPos++
+			delete(verticesToUse, orderAux[i])
+			order[uint64(len(order))-orderPos] = orderAux[i]
+		}
 	}
+
+	// Check if we have any cycle after sort the vertices, we have a cycle
+	// if any of the vertices have a edge to a previously visited vertex
+	mapPos := make(map[uint64]uint64)
+	for i := uint64(0); i < uint64(len(order)); i++ {
+		mapPos[order[i]] = i
+		for edge := range gr.VertexEdges[order[i]] {
+			if _, ok := mapPos[edge]; ok {
+				return nil, false
+			}
+		}
+	}
+	success = true
 
 	return
 }
@@ -278,9 +292,9 @@ func (gr *UnWeightGraph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo ma
 //	- http://en.wikipedia.org/wiki/Depth-first_search
 // The Tremaux's algorithm is used to perform this search:
 //	- http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
-func (gr *UnWeightGraph) Dfs(origin uint64) (usedVertex map[uint64]bool) {
+func (gr *UnWeightGraph) Dfs(root uint64) (usedVertex map[uint64]bool) {
 	usedVertex = make(map[uint64]bool)
-	gr.dfs(origin, usedVertex, nil, nil)
+	gr.dfs(root, usedVertex, nil, nil)
 
 	return
 }
