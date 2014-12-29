@@ -42,9 +42,52 @@ func GetUnWeightGraph(edges [][2]uint64, undirected bool) (ug *UnWeightGraph) {
 	return
 }
 
-func (gr *UnWeightGraph) StronglyConnectedComponents() (order []uint64, success bool) {
-	if gr.Undirected {
-		return nil, false
+// NewReversedGraph Returns a copy allocated in a new memory space of the
+// sorted graph, but with the edges in the opposite way
+func (gr *UnWeightGraph) NewReversedGraph() (rev *UnWeightGraph) {
+	rev = &UnWeightGraph{
+		Vertices:    gr.Vertices,
+		VertexEdges: make(map[uint64]map[uint64]bool),
+		Undirected:  false,
+	}
+
+	for v, e := range gr.VertexEdges {
+		for d := range e {
+			if _, ok := rev.VertexEdges[d]; ok {
+				rev.VertexEdges[d][v] = true
+			} else {
+				rev.VertexEdges[d] = map[uint64]bool{v: true}
+			}
+		}
+	}
+
+	return
+}
+
+// StronglyConnectedComponents Detects all the strongly connected components in
+// a directed graph and returns a map with the vertices as a key and the group
+// where the vertex belongs as value, and another slice of maps where each map
+// is usead as a set who groups the vertices by groups, the keys of the maps
+// are vertex number
+func (gr *UnWeightGraph) StronglyConnectedComponents() (components map[uint64]uint64, compGroups []map[uint64]bool) {
+	currentGroup := uint64(0)
+	components = make(map[uint64]uint64)
+	compGroups = []map[uint64]bool{}
+
+	topologOrder, _ := gr.TopologicalOrder()
+	rev := gr.NewReversedGraph()
+	for _, v := range topologOrder {
+		if _, in := components[v]; !in {
+			group := rev.Dfs(v)
+			compGroups = append(compGroups, make(map[uint64]bool))
+			for uv := range group {
+				if _, in := components[uv]; !in {
+					compGroups[len(compGroups)-1][uv] = true
+					components[uv] = currentGroup
+				}
+			}
+			currentGroup++
+		}
 	}
 
 	return
@@ -70,7 +113,9 @@ func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
 	order = make([]uint64, len(gr.Vertices))
 	group := make(map[uint64]bool)
 	for len(verticesToUse) > 0 {
-		for orig = range verticesToUse { break }
+		for orig = range verticesToUse {
+			break
+		}
 
 		orderAux := make([]uint64, len(gr.Vertices))
 		pos := uint64(0)
@@ -90,7 +135,7 @@ func (gr *UnWeightGraph) TopologicalOrder() (order []uint64, success bool) {
 		mapPos[order[i]] = i
 		for edge := range gr.VertexEdges[order[i]] {
 			if _, ok := mapPos[edge]; ok {
-				return nil, false
+				return order, false
 			}
 		}
 	}
@@ -248,14 +293,32 @@ func (gr *UnWeightGraph) EulerianCycle(orig uint64) (tour []uint64, success bool
 // without connection with any other vertex in any other returned set of
 // vertices
 func (gr *UnWeightGraph) ConnectedComponents() (groups []map[uint64]bool) {
-	usedVertex := make(map[uint64]bool)
+	var groupToUse uint64
+	usedVertex := make(map[uint64]uint64)
+	currentGroup := uint64(0)
 	for v := range gr.VertexEdges {
 		if _, used := usedVertex[v]; !used {
 			group := make(map[uint64]bool)
 			gr.dfs(v, group, nil, nil)
-			groups = append(groups, group)
+			found := false
+		groupSearch:
 			for k := range group {
-				usedVertex[k] = true
+				if g, used := usedVertex[k]; used {
+					groupToUse = g
+					found = true
+
+					break groupSearch
+				}
+			}
+			if !found {
+				groupToUse = currentGroup
+				currentGroup++
+				groups = append(groups, make(map[uint64]bool))
+			}
+
+			for k := range group {
+				usedVertex[k] = groupToUse
+				groups[groupToUse][k] = true
 			}
 		}
 	}

@@ -364,3 +364,44 @@ func TestTopologicalCycle(t *testing.T) {
 		t.Error("Problem calculating topological order on graph:", gr.VertexEdges, "a graph with a cycle can't have topological order")
 	}
 }
+
+func TestStrongConnectedComponents(t *testing.T) {
+	gr := GetUnWeightGraph(
+		[][2]uint64{
+			[2]uint64{0, 6},
+			[2]uint64{0, 2},
+			[2]uint64{1, 0},
+			[2]uint64{2, 3},
+			[2]uint64{2, 4},
+			[2]uint64{3, 2},
+			[2]uint64{3, 4},
+			[2]uint64{4, 5},
+			[2]uint64{4, 6},
+			[2]uint64{4, 11},
+			[2]uint64{5, 3},
+			[2]uint64{5, 0},
+			[2]uint64{6, 7},
+			[2]uint64{6, 8},
+			[2]uint64{8, 6},
+			[2]uint64{9, 7},
+			[2]uint64{9, 6},
+			[2]uint64{9, 12},
+			[2]uint64{10, 9},
+			[2]uint64{11, 9},
+			[2]uint64{12, 10},
+			[2]uint64{12, 11},
+		},
+		false,
+	)
+
+	comps, groups := gr.StronglyConnectedComponents()
+	if len(groups) != 5 {
+		t.Error("We have five strong components on the graph:", gr.VertexEdges, ", but:", len(groups), "was detected")
+	}
+	if comps[0] != comps[3] {
+		t.Error("The components 0 and 3 should to be in the same group, but was not detected as it")
+	}
+	if comps[11] != comps[9] {
+		t.Error("The components 0 and 3 should to be in the same group, but was not detected as it")
+	}
+}
