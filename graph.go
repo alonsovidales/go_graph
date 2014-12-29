@@ -17,6 +17,7 @@ type Graph struct {
 
 // ByWeight Used to sort the graph edges by weight
 type ByWeight [][]uint64
+
 func (a ByWeight) Len() int           { return len(a) }
 func (a ByWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByWeight) Less(i, j int) bool { return a[i][2] < a[j][2] }
@@ -77,7 +78,8 @@ func (gr *Graph) Mst() (mst [][]uint64) {
 	vertexGroups := make(map[uint64]uint64)
 	connect := make([]uint64, 2)
 	lastUsedGroup := uint64(0)
-	queueLoop: for _, e := range queue {
+queueLoop:
+	for _, e := range queue {
 		addToExistingGroup := false
 		lG, lIn := vertexGroups[e[0]]
 		rG, rIn := vertexGroups[e[1]]
