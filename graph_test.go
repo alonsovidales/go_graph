@@ -7,9 +7,9 @@ import (
 	//"fmt"
 )
 
-func createRandomGraph(edges int64, undirected bool) (ug *UnWeightGraph) {
-	ug = &UnWeightGraph{
-		VertexEdges: make(map[uint64]map[uint64]bool),
+func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
+	ug = &Graph{
+		VertexEdges: make(map[uint64]map[uint64]uint64),
 	}
 
 	for i := int64(0); i < edges; i++ {
@@ -17,16 +17,16 @@ func createRandomGraph(edges int64, undirected bool) (ug *UnWeightGraph) {
 		to := uint64(rand.Int63() % edges)
 		if from != to {
 			if _, ok := ug.VertexEdges[from]; ok {
-				ug.VertexEdges[from][to] = true
+				ug.VertexEdges[from][to] = uint64(rand.Int63())
 			} else {
-				ug.VertexEdges[from] = map[uint64]bool{to: true}
+				ug.VertexEdges[from] = map[uint64]uint64{to: uint64(rand.Int63())}
 			}
 
 			if undirected {
 				if _, ok := ug.VertexEdges[to]; ok {
-					ug.VertexEdges[to][from] = true
+					ug.VertexEdges[to][from] = uint64(rand.Int63())
 				} else {
-					ug.VertexEdges[to] = map[uint64]bool{from: true}
+					ug.VertexEdges[to] = map[uint64]uint64{from: uint64(rand.Int63())}
 				}
 			}
 		}
@@ -38,18 +38,18 @@ func createRandomGraph(edges int64, undirected bool) (ug *UnWeightGraph) {
 // This test checks if we can get by DFS the two paths that connects all the
 // elements in two separate graphs without any connection between them
 func TestUndDFS(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{0, 2},
-			[2]uint64{1, 2},
-			[2]uint64{2, 3},
-			[2]uint64{2, 4},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{0, 2},
+			[]uint64{1, 2},
+			[]uint64{2, 3},
+			[]uint64{2, 4},
 
-			[2]uint64{5, 6},
-			[2]uint64{6, 7},
-			[2]uint64{6, 9},
-			[2]uint64{9, 5},
+			[]uint64{5, 6},
+			[]uint64{6, 7},
+			[]uint64{6, 9},
+			[]uint64{9, 5},
 		},
 		true,
 	)
@@ -76,18 +76,18 @@ func TestUndDFS(t *testing.T) {
 }
 
 func TestUndConnectedComponents(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{0, 2},
-			[2]uint64{1, 2},
-			[2]uint64{2, 3},
-			[2]uint64{2, 4},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{0, 2},
+			[]uint64{1, 2},
+			[]uint64{2, 3},
+			[]uint64{2, 4},
 
-			[2]uint64{5, 6},
-			[2]uint64{6, 7},
-			[2]uint64{6, 9},
-			[2]uint64{9, 5},
+			[]uint64{5, 6},
+			[]uint64{6, 7},
+			[]uint64{6, 9},
+			[]uint64{9, 5},
 		},
 		true,
 	)
@@ -126,16 +126,16 @@ compLoop:
 }
 
 func TestUndBFS(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{0, 2},
-			[2]uint64{0, 5},
-			[2]uint64{1, 2},
-			[2]uint64{2, 3},
-			[2]uint64{2, 4},
-			[2]uint64{4, 3},
-			[2]uint64{3, 5},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{0, 2},
+			[]uint64{0, 5},
+			[]uint64{1, 2},
+			[]uint64{2, 3},
+			[]uint64{2, 4},
+			[]uint64{4, 3},
+			[]uint64{3, 5},
 		},
 		true,
 	)
@@ -170,22 +170,22 @@ func TestUndBFS(t *testing.T) {
 }
 
 func TestUndBipartite(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{1, 6},
-			[2]uint64{2, 8},
-			[2]uint64{3, 8},
-			[2]uint64{4, 6},
-			[2]uint64{4, 9},
-			[2]uint64{5, 8},
-			[2]uint64{5, 9},
-			[2]uint64{7, 2},
-			[2]uint64{7, 3},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{1, 6},
+			[]uint64{2, 8},
+			[]uint64{3, 8},
+			[]uint64{4, 6},
+			[]uint64{4, 9},
+			[]uint64{5, 8},
+			[]uint64{5, 9},
+			[]uint64{7, 2},
+			[]uint64{7, 3},
 
-			[2]uint64{10, 11},
-			[2]uint64{11, 12},
-			[2]uint64{12, 13},
-			[2]uint64{10, 12},
+			[]uint64{10, 11},
+			[]uint64{11, 12},
+			[]uint64{12, 13},
+			[]uint64{10, 12},
 		},
 		true,
 	)
@@ -200,16 +200,16 @@ func TestUndBipartite(t *testing.T) {
 }
 
 func TestUndEulerianCycle(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{1, 4},
-			[2]uint64{4, 2},
-			[2]uint64{1, 5},
-			[2]uint64{5, 2},
-			[2]uint64{1, 2},
-			[2]uint64{2, 3},
-			[2]uint64{3, 0},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{1, 4},
+			[]uint64{4, 2},
+			[]uint64{1, 5},
+			[]uint64{5, 2},
+			[]uint64{1, 2},
+			[]uint64{2, 3},
+			[]uint64{3, 0},
 		},
 		true,
 	)
@@ -227,17 +227,17 @@ func TestUndEulerianCycle(t *testing.T) {
 }
 
 func TestUndEulerianPath(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{1, 4},
-			[2]uint64{4, 2},
-			[2]uint64{1, 5},
-			[2]uint64{5, 2},
-			[2]uint64{1, 2},
-			[2]uint64{2, 3},
-			[2]uint64{3, 0},
-			[2]uint64{0, 2},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{1, 4},
+			[]uint64{4, 2},
+			[]uint64{1, 5},
+			[]uint64{5, 2},
+			[]uint64{1, 2},
+			[]uint64{2, 3},
+			[]uint64{3, 0},
+			[]uint64{0, 2},
 		},
 		true,
 	)
@@ -255,42 +255,42 @@ func TestUndEulerianPath(t *testing.T) {
 }
 
 func TestUndHamiltonPath(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{2, 3},
-			[2]uint64{3, 4},
-			[2]uint64{4, 5},
-			[2]uint64{5, 6},
-			[2]uint64{6, 7},
-			[2]uint64{7, 8},
-			[2]uint64{8, 9},
-			[2]uint64{9, 10},
-			[2]uint64{10, 11},
-			[2]uint64{11, 2},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{2, 3},
+			[]uint64{3, 4},
+			[]uint64{4, 5},
+			[]uint64{5, 6},
+			[]uint64{6, 7},
+			[]uint64{7, 8},
+			[]uint64{8, 9},
+			[]uint64{9, 10},
+			[]uint64{10, 11},
+			[]uint64{11, 2},
 
-			[2]uint64{1, 2},
-			[2]uint64{4, 12},
-			[2]uint64{6, 13},
-			[2]uint64{8, 14},
-			[2]uint64{10, 15},
+			[]uint64{1, 2},
+			[]uint64{4, 12},
+			[]uint64{6, 13},
+			[]uint64{8, 14},
+			[]uint64{10, 15},
 
-			[2]uint64{1, 12},
-			[2]uint64{12, 13},
-			[2]uint64{13, 14},
-			[2]uint64{14, 15},
-			[2]uint64{15, 1},
+			[]uint64{1, 12},
+			[]uint64{12, 13},
+			[]uint64{13, 14},
+			[]uint64{14, 15},
+			[]uint64{15, 1},
 
-			[2]uint64{11, 16},
-			[2]uint64{9, 20},
-			[2]uint64{7, 19},
-			[2]uint64{5, 18},
-			[2]uint64{3, 17},
+			[]uint64{11, 16},
+			[]uint64{9, 20},
+			[]uint64{7, 19},
+			[]uint64{5, 18},
+			[]uint64{3, 17},
 
-			[2]uint64{16, 17},
-			[2]uint64{17, 18},
-			[2]uint64{18, 19},
-			[2]uint64{19, 20},
-			[2]uint64{20, 16},
+			[]uint64{16, 17},
+			[]uint64{17, 18},
+			[]uint64{18, 19},
+			[]uint64{19, 20},
+			[]uint64{20, 16},
 		},
 		true,
 	)
@@ -314,19 +314,19 @@ func TestUndHamiltonPath(t *testing.T) {
 }
 
 func TestTopologicalOrder(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{0, 5},
-			[2]uint64{0, 2},
-			[2]uint64{1, 4},
-			[2]uint64{5, 2},
-			[2]uint64{3, 2},
-			[2]uint64{3, 5},
-			[2]uint64{3, 4},
-			[2]uint64{3, 6},
-			[2]uint64{6, 0},
-			[2]uint64{6, 4},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{0, 5},
+			[]uint64{0, 2},
+			[]uint64{1, 4},
+			[]uint64{5, 2},
+			[]uint64{3, 2},
+			[]uint64{3, 5},
+			[]uint64{3, 4},
+			[]uint64{3, 6},
+			[]uint64{6, 0},
+			[]uint64{6, 4},
 		},
 		false,
 	)
@@ -341,20 +341,20 @@ func TestTopologicalOrder(t *testing.T) {
 }
 
 func TestTopologicalCycle(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 1},
-			[2]uint64{0, 5},
-			[2]uint64{0, 2},
-			[2]uint64{1, 4},
-			[2]uint64{5, 2},
-			[2]uint64{3, 2},
-			[2]uint64{3, 5},
-			[2]uint64{3, 4},
-			[2]uint64{3, 6},
-			[2]uint64{6, 0},
-			[2]uint64{6, 4},
-			[2]uint64{2, 3},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 1},
+			[]uint64{0, 5},
+			[]uint64{0, 2},
+			[]uint64{1, 4},
+			[]uint64{5, 2},
+			[]uint64{3, 2},
+			[]uint64{3, 5},
+			[]uint64{3, 4},
+			[]uint64{3, 6},
+			[]uint64{6, 0},
+			[]uint64{6, 4},
+			[]uint64{2, 3},
 		},
 		false,
 	)
@@ -366,30 +366,30 @@ func TestTopologicalCycle(t *testing.T) {
 }
 
 func TestStrongConnectedComponents(t *testing.T) {
-	gr := GetUnWeightGraph(
-		[][2]uint64{
-			[2]uint64{0, 6},
-			[2]uint64{0, 2},
-			[2]uint64{1, 0},
-			[2]uint64{2, 3},
-			[2]uint64{2, 4},
-			[2]uint64{3, 2},
-			[2]uint64{3, 4},
-			[2]uint64{4, 5},
-			[2]uint64{4, 6},
-			[2]uint64{4, 11},
-			[2]uint64{5, 3},
-			[2]uint64{5, 0},
-			[2]uint64{6, 7},
-			[2]uint64{6, 8},
-			[2]uint64{8, 6},
-			[2]uint64{9, 7},
-			[2]uint64{9, 6},
-			[2]uint64{9, 12},
-			[2]uint64{10, 9},
-			[2]uint64{11, 9},
-			[2]uint64{12, 10},
-			[2]uint64{12, 11},
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{0, 6},
+			[]uint64{0, 2},
+			[]uint64{1, 0},
+			[]uint64{2, 3},
+			[]uint64{2, 4},
+			[]uint64{3, 2},
+			[]uint64{3, 4},
+			[]uint64{4, 5},
+			[]uint64{4, 6},
+			[]uint64{4, 11},
+			[]uint64{5, 3},
+			[]uint64{5, 0},
+			[]uint64{6, 7},
+			[]uint64{6, 8},
+			[]uint64{8, 6},
+			[]uint64{9, 7},
+			[]uint64{9, 6},
+			[]uint64{9, 12},
+			[]uint64{10, 9},
+			[]uint64{11, 9},
+			[]uint64{12, 10},
+			[]uint64{12, 11},
 		},
 		false,
 	)
@@ -404,4 +404,30 @@ func TestStrongConnectedComponents(t *testing.T) {
 	if comps[11] != comps[9] {
 		t.Error("The components 0 and 3 should to be in the same group, but was not detected as it")
 	}
+}
+
+func TestMst(t *testing.T) {
+	gr := GetGraph(
+		[][]uint64{
+			[]uint64{1, 7, 19},
+			[]uint64{0, 2, 26},
+			[]uint64{1, 3, 29},
+			[]uint64{2, 3, 17},
+			[]uint64{5, 7, 28},
+			[]uint64{2, 7, 34},
+			[]uint64{6, 4, 93},
+			[]uint64{4, 5, 35},
+			[]uint64{1, 5, 32},
+			[]uint64{1, 2, 36},
+			[]uint64{0, 4, 38},
+			[]uint64{4, 7, 37},
+			[]uint64{6, 2, 40},
+			[]uint64{3, 6, 52},
+			[]uint64{0, 7, 16},
+			[]uint64{6, 0, 58},
+		},
+		false,
+	)
+
+	gr.Mst()
 }
