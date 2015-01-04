@@ -444,3 +444,50 @@ func TestMst(t *testing.T) {
 		t.Error("Expeceted MST:", expectedResult, "but:", result, "obtained.")
 	}
 }
+
+func TestDijkstra(t *testing.T) {
+	gr := GetGraph(
+		[]EdgeDefinition{
+			EdgeDefinition{0, 1, 5},
+			EdgeDefinition{0, 7, 8},
+			EdgeDefinition{0, 4, 9},
+
+			EdgeDefinition{1, 3, 15},
+			EdgeDefinition{1, 2, 12},
+			EdgeDefinition{1, 7, 4},
+
+			EdgeDefinition{2, 3, 3},
+			EdgeDefinition{2, 6, 11},
+
+			EdgeDefinition{3, 6, 9},
+
+			EdgeDefinition{4, 7, 5},
+			EdgeDefinition{4, 5, 4},
+			EdgeDefinition{4, 6, 20},
+
+			EdgeDefinition{5, 2, 1},
+			EdgeDefinition{5, 6, 13},
+
+			EdgeDefinition{7, 2, 7},
+			EdgeDefinition{7, 5, 6},
+		},
+		false,
+	)
+
+	expectedResult := map[uint64]Distance {
+		0: Distance{0, 0},
+		1: Distance{0, 5},
+		2: Distance{5, 14},
+		3: Distance{2, 17},
+		4: Distance{0, 9},
+		5: Distance{4, 13},
+		6: Distance{2, 25},
+		7: Distance{0, 8},
+	}
+
+	result := gr.ShortestPath(0)
+
+	if !reflect.DeepEqual(result, expectedResult) {
+		t.Error("Expeceted distances from Zero:", expectedResult, "but:", result, "obtained.")
+	}
+}

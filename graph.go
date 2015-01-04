@@ -24,6 +24,11 @@ type EdgeDefinition struct {
 	w float64
 }
 
+type Distance struct {
+	f uint64
+	d float64
+}
+
 // ByWeight Used to sort the graph edges by weight
 type ByWeight []EdgeDefinition
 
@@ -78,13 +83,31 @@ func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
 	return
 }
 
-func (gr *Graph) ShortestPath(origin uint64) (mst [][]uint64) {
-	// Use Dijkstra
-	/*if !gr.NegEdges {
-		dist = make(map[uint64]int64)
-		for v := range gr.Vertices {
+func (gr *Graph) ShortestPath(origin uint64) (dist map[uint64]Distance) {
+	if !gr.NegEdges {
+		// We can use Dijkstra :)
+		dist = map[uint64]Distance{origin: Distance{
+			f: origin,
+			d: 0,
+		}}
+		queue := []uint64{origin}
+		for len(queue) > 0 {
+			visited := make(map[uint64]bool)
+			for t, w := range gr.VertexEdges[queue[0]] {
+				if _, ok := dist[t]; !ok || dist[t].d > dist[queue[0]].d + w {
+					dist[t] = Distance {
+						f: queue[0],
+						d: dist[queue[0]].d + w,
+					}
+					if _, ok := visited[t]; !ok {
+						visited[t] = true
+						queue = append(queue, t)
+					}
+				}
+			}
+			queue = queue[1:]
 		}
-	}*/
+	}
 	/*Vertices    map[uint64]bool
 	VertexEdges map[uint64]map[uint64]int64
 	Undirected  bool
