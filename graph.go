@@ -9,49 +9,86 @@ import (
 // the vertices that can be reached from the main key vertex and the value the
 // weight for this edge, the Vertices property is used as a set who contains
 // all the available vertices in the graph
+// The property NegEdges indicates if the graph contains or not negative edges
 type Graph struct {
+	RawEdges    []EdgeDefinition
 	Vertices    map[uint64]bool
-	VertexEdges map[uint64]map[uint64]uint64
+	VertexEdges map[uint64]map[uint64]float64
 	Undirected  bool
+	NegEdges    bool
+}
+
+type EdgeDefinition struct {
+	f uint64
+	t uint64
+	w float64
 }
 
 // ByWeight Used to sort the graph edges by weight
-type ByWeight [][]uint64
+type ByWeight []EdgeDefinition
 
 func (a ByWeight) Len() int           { return len(a) }
 func (a ByWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByWeight) Less(i, j int) bool { return a[i][2] < a[j][2] }
+func (a ByWeight) Less(i, j int) bool { return a[i].w < a[j].w }
+
+func GetUnWeightGraph(edges [][]uint64, undirected bool) (*Graph) {
+	aux := make([]EdgeDefinition, len(edges))
+	for i, edge := range edges {
+		aux[i] = EdgeDefinition{edge[0], edge[1], 0}
+	}
+
+	return GetGraph(aux, undirected)
+}
 
 // GetGraph Returns an unweighted graph containing the specified edges,
 // use the second boolean parameter in order to specify if the graph to be
 // constructed is directed (true) or undirected (false)
-func GetGraph(edges [][]uint64, undirected bool) (ug *Graph) {
+func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
+	var weight float64
+
 	ug = &Graph{
+		RawEdges:    edges,
 		Vertices:    make(map[uint64]bool),
-		VertexEdges: make(map[uint64]map[uint64]uint64),
+		VertexEdges: make(map[uint64]map[uint64]float64),
 		Undirected:  undirected,
+		NegEdges:    false,
 	}
 
-	weight := uint64(1)
 	for _, edge := range edges {
-		if len(edge) == 3 {
-			weight = edge[2]
+		weight = edge.w
+		if weight < 0 {
+			ug.NegEdges = true
 		}
-		ug.Vertices[edge[0]] = true
-		ug.Vertices[edge[1]] = true
-		if _, ok := ug.VertexEdges[edge[0]]; ok {
-			ug.VertexEdges[edge[0]][edge[1]] = weight
+		ug.Vertices[edge.f] = true
+		ug.Vertices[edge.t] = true
+		if _, ok := ug.VertexEdges[edge.f]; ok {
+			ug.VertexEdges[edge.f][edge.t] = weight
 		} else {
-			ug.VertexEdges[edge[0]] = map[uint64]uint64{edge[1]: weight}
+			ug.VertexEdges[edge.f] = map[uint64]float64{edge.t: weight}
 		}
 		if undirected {
-			if _, ok := ug.VertexEdges[edge[1]]; ok {
-				ug.VertexEdges[edge[1]][edge[0]] = weight
+			if _, ok := ug.VertexEdges[edge.t]; ok {
+				ug.VertexEdges[edge.t][edge.f] = weight
 			} else {
-				ug.VertexEdges[edge[1]] = map[uint64]uint64{edge[0]: weight}
+				ug.VertexEdges[edge.t] = map[uint64]float64{edge.f: weight}
 			}
 		}
 	}
+
+	return
+}
+
+func (gr *Graph) ShortestPath(origin uint64) (mst [][]uint64) {
+	// Use Dijkstra
+	/*if !gr.NegEdges {
+		dist = make(map[uint64]int64)
+		for v := range gr.Vertices {
+		}
+	}*/
+	/*Vertices    map[uint64]bool
+	VertexEdges map[uint64]map[uint64]int64
+	Undirected  bool
+	NegEdges    bool*/
 
 	return
 }
@@ -61,28 +98,21 @@ func GetGraph(edges [][]uint64, undirected bool) (ug *Graph) {
 //	- http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
 // An Union-find in order to detect cycles:
 //	- http://en.wikipedia.org/wiki/Disjoint-set_data_structure
-func (gr *Graph) Mst() (mst [][]uint64) {
-	queue := [][]uint64{}
-	mst = [][]uint64{}
-	for v, e := range gr.VertexEdges {
-		for tv, w := range e {
-			queue = append(queue, []uint64{v, tv, w})
-		}
-	}
-
+func (gr *Graph) Mst() (mst []EdgeDefinition) {
 	var edgeToAdd, groupId uint64
+	mst = []EdgeDefinition{}
 
 	// Using union-find algorithm to detect cycles
-	sort.Sort(ByWeight(queue))
+	sort.Sort(ByWeight(gr.RawEdges))
 	vertexByGroup := make(map[uint64][]uint64)
 	vertexGroups := make(map[uint64]uint64)
 	connect := make([]uint64, 2)
 	lastUsedGroup := uint64(0)
 queueLoop:
-	for _, e := range queue {
+	for _, e := range gr.RawEdges {
 		addToExistingGroup := false
-		lG, lIn := vertexGroups[e[0]]
-		rG, rIn := vertexGroups[e[1]]
+		lG, lIn := vertexGroups[e.f]
+		rG, rIn := vertexGroups[e.t]
 		switch {
 		case lIn && rIn:
 			// We have a vertex :'(
@@ -106,17 +136,17 @@ queueLoop:
 			delete(vertexByGroup, connect[1])
 		case lIn:
 			groupId = lG
-			edgeToAdd = e[1]
+			edgeToAdd = e.t
 			addToExistingGroup = true
 		case rIn:
 			groupId = rG
-			edgeToAdd = e[0]
+			edgeToAdd = e.f
 			addToExistingGroup = true
 		default:
-			vertexByGroup[lastUsedGroup] = []uint64{e[0], e[1]}
+			vertexByGroup[lastUsedGroup] = []uint64{e.f, e.t}
 
-			vertexGroups[e[0]] = lastUsedGroup
-			vertexGroups[e[1]] = lastUsedGroup
+			vertexGroups[e.f] = lastUsedGroup
+			vertexGroups[e.t] = lastUsedGroup
 
 			lastUsedGroup++
 		}
@@ -140,7 +170,7 @@ queueLoop:
 func (gr *Graph) NewReversedGraph() (rev *Graph) {
 	rev = &Graph{
 		Vertices:    gr.Vertices,
-		VertexEdges: make(map[uint64]map[uint64]uint64),
+		VertexEdges: make(map[uint64]map[uint64]float64),
 		Undirected:  false,
 	}
 
@@ -149,7 +179,7 @@ func (gr *Graph) NewReversedGraph() (rev *Graph) {
 			if _, ok := rev.VertexEdges[d]; ok {
 				rev.VertexEdges[d][v] = w
 			} else {
-				rev.VertexEdges[d] = map[uint64]uint64{v: w}
+				rev.VertexEdges[d] = map[uint64]float64{v: w}
 			}
 		}
 	}
@@ -164,9 +194,9 @@ func (gr *Graph) NewReversedGraph() (rev *Graph) {
 // are vertex number
 // The algorithm used is the Kosaraju-Sharir's algorithm:
 // 	- http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
-func (gr *Graph) StronglyConnectedComponents() (components map[uint64]uint64, compGroups []map[uint64]bool) {
-	currentGroup := uint64(0)
-	components = make(map[uint64]uint64)
+func (gr *Graph) StronglyConnectedComponents() (components map[uint64]int64, compGroups []map[uint64]bool) {
+	currentGroup := int64(0)
+	components = make(map[uint64]int64)
 	compGroups = []map[uint64]bool{}
 
 	topologOrder, _ := gr.TopologicalOrder()
@@ -267,14 +297,14 @@ func (gr *Graph) IsBipartite(origin uint64) bool {
 // Copy Returns a copy allocated in a different memory space of the graph
 func (gr *Graph) Copy() (cp *Graph) {
 	cp = &Graph{
-		VertexEdges: make(map[uint64]map[uint64]uint64),
+		VertexEdges: make(map[uint64]map[uint64]float64),
 	}
 	for k, e := range gr.VertexEdges {
 		for d, w := range e {
 			if _, ok := cp.VertexEdges[k]; ok {
 				cp.VertexEdges[k][d] = w
 			} else {
-				cp.VertexEdges[k] = map[uint64]uint64{d: w}
+				cp.VertexEdges[k] = map[uint64]float64{d: w}
 			}
 		}
 	}

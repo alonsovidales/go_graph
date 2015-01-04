@@ -1,15 +1,15 @@
 package graphs
 
 import (
-	"math/rand"
+	//"math/rand"
 	"reflect"
 	"testing"
 	//"fmt"
 )
 
-func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
+/*func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
 	ug = &Graph{
-		VertexEdges: make(map[uint64]map[uint64]uint64),
+		VertexEdges: make(map[uint64]map[uint64]int64),
 	}
 
 	for i := int64(0); i < edges; i++ {
@@ -17,28 +17,28 @@ func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
 		to := uint64(rand.Int63() % edges)
 		if from != to {
 			if _, ok := ug.VertexEdges[from]; ok {
-				ug.VertexEdges[from][to] = uint64(rand.Int63())
+				ug.VertexEdges[from][to] = int64(rand.Int63())
 			} else {
-				ug.VertexEdges[from] = map[uint64]uint64{to: uint64(rand.Int63())}
+				ug.VertexEdges[from] = map[uint64]int64{to: uint64(rand.Int63())}
 			}
 
 			if undirected {
 				if _, ok := ug.VertexEdges[to]; ok {
-					ug.VertexEdges[to][from] = uint64(rand.Int63())
+					ug.VertexEdges[to][from] = int64(rand.Int63())
 				} else {
-					ug.VertexEdges[to] = map[uint64]uint64{from: uint64(rand.Int63())}
+					ug.VertexEdges[to] = map[uint64]int64{from: uint64(rand.Int63())}
 				}
 			}
 		}
 	}
 
 	return
-}
+}*/
 
 // This test checks if we can get by DFS the two paths that connects all the
 // elements in two separate graphs without any connection between them
 func TestUndDFS(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{0, 2},
@@ -76,7 +76,7 @@ func TestUndDFS(t *testing.T) {
 }
 
 func TestUndConnectedComponents(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{0, 2},
@@ -126,7 +126,7 @@ compLoop:
 }
 
 func TestUndBFS(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{0, 2},
@@ -170,7 +170,7 @@ func TestUndBFS(t *testing.T) {
 }
 
 func TestUndBipartite(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{1, 6},
 			[]uint64{2, 8},
@@ -200,7 +200,7 @@ func TestUndBipartite(t *testing.T) {
 }
 
 func TestUndEulerianCycle(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{1, 4},
@@ -227,7 +227,7 @@ func TestUndEulerianCycle(t *testing.T) {
 }
 
 func TestUndEulerianPath(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{1, 4},
@@ -255,7 +255,7 @@ func TestUndEulerianPath(t *testing.T) {
 }
 
 func TestUndHamiltonPath(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{2, 3},
 			[]uint64{3, 4},
@@ -314,7 +314,7 @@ func TestUndHamiltonPath(t *testing.T) {
 }
 
 func TestTopologicalOrder(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{0, 5},
@@ -341,7 +341,7 @@ func TestTopologicalOrder(t *testing.T) {
 }
 
 func TestTopologicalCycle(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 1},
 			[]uint64{0, 5},
@@ -366,7 +366,7 @@ func TestTopologicalCycle(t *testing.T) {
 }
 
 func TestStrongConnectedComponents(t *testing.T) {
-	gr := GetGraph(
+	gr := GetUnWeightGraph(
 		[][]uint64{
 			[]uint64{0, 6},
 			[]uint64{0, 2},
@@ -408,26 +408,39 @@ func TestStrongConnectedComponents(t *testing.T) {
 
 func TestMst(t *testing.T) {
 	gr := GetGraph(
-		[][]uint64{
-			[]uint64{1, 7, 19},
-			[]uint64{0, 2, 26},
-			[]uint64{1, 3, 29},
-			[]uint64{2, 3, 17},
-			[]uint64{5, 7, 28},
-			[]uint64{2, 7, 34},
-			[]uint64{6, 4, 93},
-			[]uint64{4, 5, 35},
-			[]uint64{1, 5, 32},
-			[]uint64{1, 2, 36},
-			[]uint64{0, 4, 38},
-			[]uint64{4, 7, 37},
-			[]uint64{6, 2, 40},
-			[]uint64{3, 6, 52},
-			[]uint64{0, 7, 16},
-			[]uint64{6, 0, 58},
+		[]EdgeDefinition{
+			EdgeDefinition{1, 7, 19},
+			EdgeDefinition{0, 2, 26},
+			EdgeDefinition{1, 3, 29},
+			EdgeDefinition{2, 3, 17},
+			EdgeDefinition{5, 7, 28},
+			EdgeDefinition{2, 7, 34},
+			EdgeDefinition{6, 4, 93},
+			EdgeDefinition{4, 5, 35},
+			EdgeDefinition{1, 5, 32},
+			EdgeDefinition{1, 2, 36},
+			EdgeDefinition{0, 4, 38},
+			EdgeDefinition{4, 7, 37},
+			EdgeDefinition{6, 2, 40},
+			EdgeDefinition{3, 6, 52},
+			EdgeDefinition{0, 7, 16},
+			EdgeDefinition{6, 0, 58},
 		},
 		false,
 	)
 
-	gr.Mst()
+	expectedResult := []EdgeDefinition {
+		EdgeDefinition{0, 7, 16},
+		EdgeDefinition{2, 3, 17},
+		EdgeDefinition{1, 7, 19},
+		EdgeDefinition{0, 2, 26},
+		EdgeDefinition{5, 7, 28},
+		EdgeDefinition{4, 5, 35},
+		EdgeDefinition{6, 2, 40},
+	}
+	result := gr.Mst()
+
+	if !reflect.DeepEqual(result, expectedResult) {
+		t.Error("Expeceted MST:", expectedResult, "but:", result, "obtained.")
+	}
 }
