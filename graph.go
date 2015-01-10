@@ -36,6 +36,13 @@ func (a ByWeight) Len() int           { return len(a) }
 func (a ByWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByWeight) Less(i, j int) bool { return a[i].w < a[j].w }
 
+// ByDistance Used to sort the graph edges by distance
+type ByDistance []Distance
+
+func (a ByDistance) Len() int           { return len(a) }
+func (a ByDistance) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByDistance) Less(i, j int) bool { return a[i].d < a[j].d }
+
 func GetUnWeightGraph(edges [][]uint64, undirected bool) (*Graph) {
 	aux := make([]EdgeDefinition, len(edges))
 	for i, edge := range edges {
@@ -83,9 +90,33 @@ func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
 	return
 }
 
-func (gr *Graph) ShortestPath(origin uint64) (dist map[uint64]Distance) {
+func (gr *Graph) ShortestPath(origin uint64, dest uint64) (dist map[uint64]Distance) {
 	if !gr.NegEdges {
 		// We can use Dijkstra :)
+		dist = map[uint64]Distance{origin: Distance{
+			f: origin,
+			d: 0,
+		}}
+		queue := []uint64{origin}
+		for len(queue) > 0 {
+			visited := make(map[uint64]bool)
+			sort.Sort(ByDistance(Distances))
+			for t, w := range gr.VertexEdges[queue[0]] {
+				if _, ok := dist[t]; !ok || dist[t].d > dist[queue[0]].d + w {
+					dist[t] = Distance {
+						f: queue[0],
+						d: dist[queue[0]].d + w,
+					}
+					if _, ok := visited[t]; !ok {
+						visited[t] = true
+						queue = append(queue, t)
+					}
+				}
+			}
+			queue = queue[1:]
+		}
+	} else {
+		// Bellman-Ford implementation
 		dist = map[uint64]Distance{origin: Distance{
 			f: origin,
 			d: 0,

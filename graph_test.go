@@ -485,7 +485,7 @@ func TestDijkstra(t *testing.T) {
 		7: Distance{0, 8},
 	}
 
-	result := gr.ShortestPath(0)
+	result := gr.ShortestPath(0, 6)
 
 	if !reflect.DeepEqual(result, expectedResult) {
 		t.Error("Expeceted distances from Zero:", expectedResult, "but:", result, "obtained.")
