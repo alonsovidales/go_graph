@@ -1,8 +1,9 @@
 package graphs
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/alonsovidales/go_fibanaccy_heap"
+	"math"
 	"sort"
 )
 
@@ -100,13 +101,114 @@ func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
 	return
 }
 
+// MinCutMaxFlow Calculates and returns the min number of edges to be removed
+// in order to get two disjoint sets of vertices. We could remove any possible
+// path from the origin to the dest vertex removing this edges.
+// The sum of all the edges to be removed corresponds to the capacity between
+// the origin and dest nodes, the max flow between the two edges.
+// The precission param is usefull in order to find a max flow in graphs with
+// edges with float weights in order to avoid large execution times.
+// Ford-Fulkerson algorithm:
+// 	- http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
+func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMinCut float64, flows map[uint64]map[uint64]float64, cut []*EdgeDefinition) {
+	// This map will contain the reverse edge relations
+	undirEdges := make(map[uint64][]uint64)
+	for f, dests := range gr.VertexEdges {
+		for t := range dests {
+			if _, ok := undirEdges[f]; !ok {
+				undirEdges[f] = []uint64{t}
+			} else {
+				undirEdges[f] = append(undirEdges[f], t)
+			}
+			if _, ok := undirEdges[t]; !ok {
+				undirEdges[t] = []uint64{f}
+			} else {
+				undirEdges[t] = append(undirEdges[t], f)
+			}
+		}
+	}
+
+	flows = make(map[uint64]map[uint64]float64)
+	for f, vertices := range gr.VertexEdges {
+		for v, _ := range vertices {
+			if _, ok := flows[f]; ok {
+				flows[f][v] = 0.0
+			} else {
+				flows[f] = map[uint64]float64{v: 0.0}
+			}
+		}
+	}
+	lastFlow := -1-precision
+	maxFlowMinCut = 0.0
+	for maxFlowMinCut - lastFlow > precision {
+		gr.maxFlow(orig, dest, undirEdges, flows, map[uint64]bool{orig: true}, []uint64{orig})
+
+		lastFlow = maxFlowMinCut
+		maxFlowMinCut = 0.0
+		for _, flow := range flows[orig] {
+			maxFlowMinCut += flow
+		}
+	}
+
+	fmt.Println(maxFlowMinCut)
+
+	return
+}
+
+func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64) {
+	f := path[0]
+	toAdd := math.Inf(+1)
+	for _, t := range path[1:] {
+		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
+			if gr.VertexEdges[f][t] - flows[f][t] < toAdd {
+				toAdd = gr.VertexEdges[f][t] - flows[f][t]
+			}
+		} else {
+			if flows[t][f] < toAdd {
+				toAdd = flows[t][f]
+			}
+		}
+
+		f = t
+	}
+
+	f = path[0]
+	for _, t := range path[1:] {
+		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
+			flows[f][t] += toAdd
+		} else {
+			flows[t][f] -= toAdd
+		}
+		f = t
+	}
+}
+
+func (gr *Graph) maxFlow(orig, dest uint64, undirEdges map[uint64][]uint64, flows map[uint64]map[uint64]float64, visitedEdges map[uint64]bool, path []uint64) {
+	//fmt.Println("Visiting:", orig)
+	if orig == dest {
+		gr.recalcFlows(path, flows)
+		return
+	}
+
+	for _, t := range undirEdges[orig] {
+		if _, yetVisited := visitedEdges[t]; yetVisited {
+			continue
+		}
+		visitedEdges[t] = true
+		path = append(path, t)
+		gr.maxFlow(t, dest, undirEdges, flows, visitedEdges, path)
+		path = path[:len(path)-1]
+		delete(visitedEdges, t)
+	}
+}
+
 // ShortestPath This method, depending on if the graph contains negative
 // weights or not, calculates the shortest path using the Dijkstra algorithm
 // for positive weights only, or the Bellman-Ford algorithm for graphs who
 // contains any negative weight
 // The shortest path is returned in the first parameter, and the distance from
 // the origin to all the vertices of the graph as the second returned value
-func (gr *Graph) ShortestPath(origin uint64, dest uint64) (path []uint64, dist map[uint64]Distance) {
+func (gr *Graph) ShortestPath(origin, dest uint64) (path []uint64, dist map[uint64]Distance) {
 	dist = make(map[uint64]Distance)
 	if !gr.NegEdges {
 		// We can use Dijkstra :)

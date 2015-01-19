@@ -7,7 +7,7 @@ format:
 	@echo "$(OK_COLOR)==> Formatting$(NO_COLOR)"
 	go fmt ./...
 
-test: deps
+test:
 	@echo "$(OK_COLOR)==> Testing$(NO_COLOR)"
 	go test ./...
 

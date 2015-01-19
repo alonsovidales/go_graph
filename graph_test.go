@@ -550,3 +550,31 @@ func TestBellmanFord(t *testing.T) {
 		t.Error("Expeceted distances from Zero:", expectedResult, "but:", result, "obtained.")
 	}
 }
+
+func TestMinCutMaxFlow(t *testing.T) {
+	gr := GetGraph(
+		[]EdgeDefinition{
+			EdgeDefinition{0, 1, 10},
+			EdgeDefinition{0, 2, 5},
+			EdgeDefinition{0, 3, 15},
+			EdgeDefinition{1, 2, 4},
+			EdgeDefinition{1, 4, 9},
+			EdgeDefinition{1, 5, 15},
+			EdgeDefinition{2, 5, 8},
+			EdgeDefinition{2, 3, 4},
+			EdgeDefinition{3, 6, 16},
+			EdgeDefinition{4, 7, 10},
+			EdgeDefinition{4, 5, 15},
+			EdgeDefinition{5, 7, 10},
+			EdgeDefinition{5, 6, 15},
+			EdgeDefinition{6, 7, 10},
+			EdgeDefinition{6, 2, 6},
+		},
+		false,
+	)
+
+	maxFlow, _, _ := gr.MinCutMaxFlow(0, 7, 0.01)
+	if maxFlow != 28 {
+		t.Error("Expected max flow for the given graph: 28 but obtained:", maxFlow)
+	}
+}
