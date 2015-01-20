@@ -130,7 +130,7 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 
 	flows = make(map[uint64]map[uint64]float64)
 	for f, vertices := range gr.VertexEdges {
-		for v, _ := range vertices {
+		for v := range vertices {
 			if _, ok := flows[f]; ok {
 				flows[f][v] = 0.0
 			} else {
@@ -138,9 +138,9 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 			}
 		}
 	}
-	lastFlow := -1-precision
+	lastFlow := -1 - precision
 	maxFlowMinCut = 0.0
-	for maxFlowMinCut - lastFlow > precision {
+	for maxFlowMinCut-lastFlow > precision {
 		gr.maxFlow(orig, dest, undirEdges, flows, map[uint64]bool{orig: true}, []uint64{orig})
 
 		lastFlow = maxFlowMinCut
@@ -160,7 +160,7 @@ func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64)
 	toAdd := math.Inf(+1)
 	for _, t := range path[1:] {
 		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
-			if gr.VertexEdges[f][t] - flows[f][t] < toAdd {
+			if gr.VertexEdges[f][t]-flows[f][t] < toAdd {
 				toAdd = gr.VertexEdges[f][t] - flows[f][t]
 			}
 		} else {
