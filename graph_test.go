@@ -408,35 +408,35 @@ func TestStrongConnectedComponents(t *testing.T) {
 
 func TestMst(t *testing.T) {
 	gr := GetGraph(
-		[]EdgeDefinition{
-			EdgeDefinition{1, 7, 19},
-			EdgeDefinition{0, 2, 26},
-			EdgeDefinition{1, 3, 29},
-			EdgeDefinition{2, 3, 17},
-			EdgeDefinition{5, 7, 28},
-			EdgeDefinition{2, 7, 34},
-			EdgeDefinition{6, 4, 93},
-			EdgeDefinition{4, 5, 35},
-			EdgeDefinition{1, 5, 32},
-			EdgeDefinition{1, 2, 36},
-			EdgeDefinition{0, 4, 38},
-			EdgeDefinition{4, 7, 37},
-			EdgeDefinition{6, 2, 40},
-			EdgeDefinition{3, 6, 52},
-			EdgeDefinition{0, 7, 16},
-			EdgeDefinition{6, 0, 58},
+		[]Edge{
+			Edge{1, 7, 19},
+			Edge{0, 2, 26},
+			Edge{1, 3, 29},
+			Edge{2, 3, 17},
+			Edge{5, 7, 28},
+			Edge{2, 7, 34},
+			Edge{6, 4, 93},
+			Edge{4, 5, 35},
+			Edge{1, 5, 32},
+			Edge{1, 2, 36},
+			Edge{0, 4, 38},
+			Edge{4, 7, 37},
+			Edge{6, 2, 40},
+			Edge{3, 6, 52},
+			Edge{0, 7, 16},
+			Edge{6, 0, 58},
 		},
 		false,
 	)
 
-	expectedResult := []EdgeDefinition{
-		EdgeDefinition{0, 7, 16},
-		EdgeDefinition{2, 3, 17},
-		EdgeDefinition{1, 7, 19},
-		EdgeDefinition{0, 2, 26},
-		EdgeDefinition{5, 7, 28},
-		EdgeDefinition{4, 5, 35},
-		EdgeDefinition{6, 2, 40},
+	expectedResult := []Edge{
+		Edge{0, 7, 16},
+		Edge{2, 3, 17},
+		Edge{1, 7, 19},
+		Edge{0, 2, 26},
+		Edge{5, 7, 28},
+		Edge{4, 5, 35},
+		Edge{6, 2, 40},
 	}
 	result := gr.Mst()
 
@@ -447,29 +447,29 @@ func TestMst(t *testing.T) {
 
 func TestDijkstra(t *testing.T) {
 	gr := GetGraph(
-		[]EdgeDefinition{
-			EdgeDefinition{0, 1, 5},
-			EdgeDefinition{0, 7, 8},
-			EdgeDefinition{0, 4, 9},
+		[]Edge{
+			Edge{0, 1, 5},
+			Edge{0, 7, 8},
+			Edge{0, 4, 9},
 
-			EdgeDefinition{1, 3, 15},
-			EdgeDefinition{1, 2, 12},
-			EdgeDefinition{1, 7, 4},
+			Edge{1, 3, 15},
+			Edge{1, 2, 12},
+			Edge{1, 7, 4},
 
-			EdgeDefinition{2, 3, 3},
-			EdgeDefinition{2, 6, 11},
+			Edge{2, 3, 3},
+			Edge{2, 6, 11},
 
-			EdgeDefinition{3, 6, 9},
+			Edge{3, 6, 9},
 
-			EdgeDefinition{4, 7, 5},
-			EdgeDefinition{4, 5, 4},
-			EdgeDefinition{4, 6, 20},
+			Edge{4, 7, 5},
+			Edge{4, 5, 4},
+			Edge{4, 6, 20},
 
-			EdgeDefinition{5, 2, 1},
-			EdgeDefinition{5, 6, 13},
+			Edge{5, 2, 1},
+			Edge{5, 6, 13},
 
-			EdgeDefinition{7, 2, 7},
-			EdgeDefinition{7, 5, 6},
+			Edge{7, 2, 7},
+			Edge{7, 5, 6},
 		},
 		false,
 	)
@@ -500,29 +500,29 @@ func TestDijkstra(t *testing.T) {
 
 func TestBellmanFord(t *testing.T) {
 	gr := GetGraph(
-		[]EdgeDefinition{
-			EdgeDefinition{0, 1, -5},
-			EdgeDefinition{0, 7, 8},
-			EdgeDefinition{0, 4, 9},
+		[]Edge{
+			Edge{0, 1, -5},
+			Edge{0, 7, 8},
+			Edge{0, 4, 9},
 
-			EdgeDefinition{1, 3, 15},
-			EdgeDefinition{1, 2, 12},
-			EdgeDefinition{1, 7, 4},
+			Edge{1, 3, 15},
+			Edge{1, 2, 12},
+			Edge{1, 7, 4},
 
-			EdgeDefinition{2, 3, 3},
-			EdgeDefinition{2, 6, 11},
+			Edge{2, 3, 3},
+			Edge{2, 6, 11},
 
-			EdgeDefinition{3, 6, 9},
+			Edge{3, 6, 9},
 
-			EdgeDefinition{4, 7, 5},
-			EdgeDefinition{4, 5, 4},
-			EdgeDefinition{4, 6, 20},
+			Edge{4, 7, 5},
+			Edge{4, 5, 4},
+			Edge{4, 6, 20},
 
-			EdgeDefinition{5, 2, -1},
-			EdgeDefinition{5, 6, 13},
+			Edge{5, 2, -1},
+			Edge{5, 6, 13},
 
-			EdgeDefinition{7, 2, 7},
-			EdgeDefinition{7, 5, 6},
+			Edge{7, 2, 7},
+			Edge{7, 5, 6},
 		},
 		false,
 	)
@@ -553,22 +553,22 @@ func TestBellmanFord(t *testing.T) {
 
 func TestMinCutMaxFlow(t *testing.T) {
 	gr := GetGraph(
-		[]EdgeDefinition{
-			EdgeDefinition{0, 1, 10},
-			EdgeDefinition{0, 2, 5},
-			EdgeDefinition{0, 3, 15},
-			EdgeDefinition{1, 2, 4},
-			EdgeDefinition{1, 4, 9},
-			EdgeDefinition{1, 5, 15},
-			EdgeDefinition{2, 5, 8},
-			EdgeDefinition{2, 3, 4},
-			EdgeDefinition{3, 6, 16},
-			EdgeDefinition{4, 7, 10},
-			EdgeDefinition{4, 5, 15},
-			EdgeDefinition{5, 7, 10},
-			EdgeDefinition{5, 6, 15},
-			EdgeDefinition{6, 7, 10},
-			EdgeDefinition{6, 2, 6},
+		[]Edge{
+			Edge{0, 1, 10},
+			Edge{0, 2, 5},
+			Edge{0, 3, 15},
+			Edge{1, 2, 4},
+			Edge{1, 4, 9},
+			Edge{1, 5, 15},
+			Edge{2, 5, 8},
+			Edge{2, 3, 4},
+			Edge{3, 6, 16},
+			Edge{4, 7, 10},
+			Edge{4, 5, 15},
+			Edge{5, 7, 10},
+			Edge{5, 6, 15},
+			Edge{6, 7, 10},
+			Edge{6, 2, 6},
 		},
 		false,
 	)
@@ -578,10 +578,10 @@ func TestMinCutMaxFlow(t *testing.T) {
 		t.Error("Expected max flow for the given graph: 28 but obtained:", maxFlow)
 	}
 
-	expectedCut := []*EdgeDefinition{
-		&EdgeDefinition{6, 7, 10},
-		&EdgeDefinition{0, 1, 10},
-		&EdgeDefinition{2, 5, 8},
+	expectedCut := []*Edge{
+		&Edge{6, 7, 10},
+		&Edge{0, 1, 10},
+		&Edge{2, 5, 8},
 	}
 
 	for _, ec := range expectedCut {
@@ -599,15 +599,15 @@ func TestMinCutMaxFlow(t *testing.T) {
 
 func TestMinCutMaxFlow2(t *testing.T) {
 	gr := GetGraph(
-		[]EdgeDefinition{
-			EdgeDefinition{1, 2, 5},
-			EdgeDefinition{1, 3, 5},
-			EdgeDefinition{2, 5, 3},
-			EdgeDefinition{2, 4, 6},
-			EdgeDefinition{3, 4, 3},
-			EdgeDefinition{3, 5, 1},
-			EdgeDefinition{4, 6, 6},
-			EdgeDefinition{5, 6, 6},
+		[]Edge{
+			Edge{1, 2, 5},
+			Edge{1, 3, 5},
+			Edge{2, 5, 3},
+			Edge{2, 4, 6},
+			Edge{3, 4, 3},
+			Edge{3, 5, 1},
+			Edge{4, 6, 6},
+			Edge{5, 6, 6},
 		},
 		false,
 	)
@@ -617,10 +617,10 @@ func TestMinCutMaxFlow2(t *testing.T) {
 		t.Error("Expected max flow for the given graph: 9 but obtained:", maxFlow)
 	}
 
-	expectedCut := []*EdgeDefinition{
-		&EdgeDefinition{1, 2, 5},
-		&EdgeDefinition{3, 4, 3},
-		&EdgeDefinition{3, 5, 1},
+	expectedCut := []*Edge{
+		&Edge{1, 2, 5},
+		&Edge{3, 4, 3},
+		&Edge{3, 5, 1},
 	}
 
 	for _, ec := range expectedCut {

@@ -13,7 +13,7 @@ import (
 // all the available vertices in the graph
 // The property NegEdges indicates if the graph contains or not negative edges
 type Graph struct {
-	RawEdges    []EdgeDefinition
+	RawEdges    []Edge
 	Vertices    map[uint64]bool
 	VertexEdges map[uint64]map[uint64]float64
 	Undirected  bool
@@ -28,16 +28,16 @@ type Distance struct {
 	Dist float64
 }
 
-// EdgeDefinition representation of one of the edges of a directed graph,
+// Edge representation of one of the edges of a directed graph,
 // contains the from and to vertices, and weight for weighted graphs
-type EdgeDefinition struct {
+type Edge struct {
 	From   uint64
 	To     uint64
 	Weight float64
 }
 
 // byWeight Used to sort the graph edges by weight
-type byWeight []EdgeDefinition
+type byWeight []Edge
 
 func (a byWeight) Len() int           { return len(a) }
 func (a byWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -54,9 +54,9 @@ func (a byDistance) Less(i, j int) bool { return a[i].Dist < a[j].Dist }
 // Use the second boolean parameter in order to specify if the graph to be
 // constructed is directed (true) or undirected (false)
 func GetUnWeightGraph(edges [][]uint64, undirected bool) *Graph {
-	aux := make([]EdgeDefinition, len(edges))
+	aux := make([]Edge, len(edges))
 	for i, edge := range edges {
-		aux[i] = EdgeDefinition{edge[0], edge[1], 0}
+		aux[i] = Edge{edge[0], edge[1], 0}
 	}
 
 	return GetGraph(aux, undirected)
@@ -65,7 +65,7 @@ func GetUnWeightGraph(edges [][]uint64, undirected bool) *Graph {
 // GetGraph Returns an weighted graph containing the specified edges.
 // Use the second boolean parameter in order to specify if the graph to be
 // constructed is directed (true) or undirected (false)
-func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
+func GetGraph(edges []Edge, undirected bool) (ug *Graph) {
 	var weight float64
 
 	ug = &Graph{
@@ -109,7 +109,7 @@ func GetGraph(edges []EdgeDefinition, undirected bool) (ug *Graph) {
 // edges with float weights in order to avoid large execution times.
 // Ford-Fulkerson algorithm:
 // 	- http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
-func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMinCut float64, flows map[uint64]map[uint64]float64, cut []*EdgeDefinition) {
+func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMinCut float64, flows map[uint64]map[uint64]float64, cut []*Edge) {
 	// This map will contain the reverse edge relations
 	undirEdges := make(map[uint64][]uint64)
 	for f, dests := range gr.VertexEdges {
@@ -150,7 +150,7 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 	}
 
 	queue := []uint64{orig}
-	cut = []*EdgeDefinition{}
+	cut = []*Edge{}
 	visited := map[uint64]bool{orig: true}
 	for len(queue) > 0 {
 		v := queue[0]
@@ -167,7 +167,7 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 			_, fromVisit := visited[f]
 			_, toVisit := visited[t]
 			if fromVisit && !toVisit && flows[f][t] == w {
-				cut = append(cut, &EdgeDefinition{
+				cut = append(cut, &Edge{
 					From:   f,
 					To:     t,
 					Weight: w,
@@ -259,9 +259,9 @@ func (gr *Graph) ShortestPath(origin, dest uint64) (path []uint64, dist map[uint
 //	- http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
 // An Union-find in order to detect cycles:
 //	- http://en.wikipedia.org/wiki/Disjoint-set_data_structure
-func (gr *Graph) Mst() (mst []EdgeDefinition) {
+func (gr *Graph) Mst() (mst []Edge) {
 	var edgeToAdd, groupID uint64
-	mst = []EdgeDefinition{}
+	mst = []Edge{}
 
 	// Using union-find algorithm to detect cycles
 	sort.Sort(byWeight(gr.RawEdges))
