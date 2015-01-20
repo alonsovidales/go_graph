@@ -36,19 +36,19 @@ type EdgeDefinition struct {
 	Weight float64
 }
 
-// ByWeight Used to sort the graph edges by weight
-type ByWeight []EdgeDefinition
+// byWeight Used to sort the graph edges by weight
+type byWeight []EdgeDefinition
 
-func (a ByWeight) Len() int           { return len(a) }
-func (a ByWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByWeight) Less(i, j int) bool { return a[i].Weight < a[j].Weight }
+func (a byWeight) Len() int           { return len(a) }
+func (a byWeight) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byWeight) Less(i, j int) bool { return a[i].Weight < a[j].Weight }
 
-// ByDistance Used to sort the graph edges by distance
-type ByDistance []Distance
+// byDistance Used to sort the graph edges by distance
+type byDistance []Distance
 
-func (a ByDistance) Len() int           { return len(a) }
-func (a ByDistance) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByDistance) Less(i, j int) bool { return a[i].Dist < a[j].Dist }
+func (a byDistance) Len() int           { return len(a) }
+func (a byDistance) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byDistance) Less(i, j int) bool { return a[i].Dist < a[j].Dist }
 
 // GetUnWeightGraph Returns an unweighted graph containing the specified edges.
 // Use the second boolean parameter in order to specify if the graph to be
@@ -264,7 +264,7 @@ func (gr *Graph) Mst() (mst []EdgeDefinition) {
 	mst = []EdgeDefinition{}
 
 	// Using union-find algorithm to detect cycles
-	sort.Sort(ByWeight(gr.RawEdges))
+	sort.Sort(byWeight(gr.RawEdges))
 	vertexByGroup := make(map[uint64][]uint64)
 	vertexGroups := make(map[uint64]uint64)
 	connect := make([]uint64, 2)
