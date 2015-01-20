@@ -1,7 +1,6 @@
 package graphs
 
 import (
-	"fmt"
 	"github.com/alonsovidales/go_fibanaccy_heap"
 	"math"
 	"sort"
@@ -150,56 +149,34 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 		}
 	}
 
-	fmt.Println(maxFlowMinCut)
+	queue := []uint64{orig}
+	cut = []*EdgeDefinition{}
+	visited := map[uint64]bool{orig: true}
+	for len(queue) > 0 {
+		v := queue[0]
+		queue = queue[1:]
+		for t, w := range gr.VertexEdges[v] {
+			if _, ok := visited[t]; !ok && flows[v][t] != w {
+				queue = append(queue, t)
+				visited[t] = true
+			}
+		}
+	}
+	for f, dests := range gr.VertexEdges {
+		for t, w := range dests {
+			_, fromVisit := visited[f]
+			_, toVisit := visited[t]
+			if fromVisit && !toVisit && flows[f][t] == w {
+				cut = append(cut, &EdgeDefinition{
+					From:   f,
+					To:     t,
+					Weight: w,
+				})
+			}
+		}
+	}
 
 	return
-}
-
-func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64) {
-	f := path[0]
-	toAdd := math.Inf(+1)
-	for _, t := range path[1:] {
-		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
-			if gr.VertexEdges[f][t]-flows[f][t] < toAdd {
-				toAdd = gr.VertexEdges[f][t] - flows[f][t]
-			}
-		} else {
-			if flows[t][f] < toAdd {
-				toAdd = flows[t][f]
-			}
-		}
-
-		f = t
-	}
-
-	f = path[0]
-	for _, t := range path[1:] {
-		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
-			flows[f][t] += toAdd
-		} else {
-			flows[t][f] -= toAdd
-		}
-		f = t
-	}
-}
-
-func (gr *Graph) maxFlow(orig, dest uint64, undirEdges map[uint64][]uint64, flows map[uint64]map[uint64]float64, visitedEdges map[uint64]bool, path []uint64) {
-	//fmt.Println("Visiting:", orig)
-	if orig == dest {
-		gr.recalcFlows(path, flows)
-		return
-	}
-
-	for _, t := range undirEdges[orig] {
-		if _, yetVisited := visitedEdges[t]; yetVisited {
-			continue
-		}
-		visitedEdges[t] = true
-		path = append(path, t)
-		gr.maxFlow(t, dest, undirEdges, flows, visitedEdges, path)
-		path = path[:len(path)-1]
-		delete(visitedEdges, t)
-	}
 }
 
 // ShortestPath This method, depending on if the graph contains negative
@@ -681,5 +658,54 @@ func (gr *Graph) dfs(origin uint64, usedVertex map[uint64]bool, order []uint64, 
 	if order != nil {
 		order[*pos] = origin
 		*pos++
+	}
+}
+
+// Used for MinCutMaxFlow to recalculate the max flow for a given path
+func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64) {
+	f := path[0]
+	toAdd := math.Inf(+1)
+	for _, t := range path[1:] {
+		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
+			if gr.VertexEdges[f][t]-flows[f][t] < toAdd {
+				toAdd = gr.VertexEdges[f][t] - flows[f][t]
+			}
+		} else {
+			if flows[t][f] < toAdd {
+				toAdd = flows[t][f]
+			}
+		}
+
+		f = t
+	}
+
+	f = path[0]
+	for _, t := range path[1:] {
+		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
+			flows[f][t] += toAdd
+		} else {
+			flows[t][f] -= toAdd
+		}
+		f = t
+	}
+}
+
+// Used for MinCutMaxFlow to calculate all the possible paths between two
+// points
+func (gr *Graph) maxFlow(orig, dest uint64, undirEdges map[uint64][]uint64, flows map[uint64]map[uint64]float64, visitedEdges map[uint64]bool, path []uint64) {
+	if orig == dest {
+		gr.recalcFlows(path, flows)
+		return
+	}
+
+	for _, t := range undirEdges[orig] {
+		if _, yetVisited := visitedEdges[t]; yetVisited {
+			continue
+		}
+		visitedEdges[t] = true
+		path = append(path, t)
+		gr.maxFlow(t, dest, undirEdges, flows, visitedEdges, path)
+		path = path[:len(path)-1]
+		delete(visitedEdges, t)
 	}
 }

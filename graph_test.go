@@ -573,8 +573,65 @@ func TestMinCutMaxFlow(t *testing.T) {
 		false,
 	)
 
-	maxFlow, _, _ := gr.MinCutMaxFlow(0, 7, 0.01)
+	maxFlow, _, cut := gr.MinCutMaxFlow(0, 7, 0.01)
 	if maxFlow != 28 {
 		t.Error("Expected max flow for the given graph: 28 but obtained:", maxFlow)
+	}
+
+	expectedCut := []*EdgeDefinition{
+		&EdgeDefinition{6, 7, 10},
+		&EdgeDefinition{0, 1, 10},
+		&EdgeDefinition{2, 5, 8},
+	}
+
+	for _, ec := range expectedCut {
+		found := false
+		for _, c := range cut {
+			if reflect.DeepEqual(ec, c) {
+				found = true
+			}
+		}
+		if !found {
+			t.Error("Expected cut:", ec, "not found")
+		}
+	}
+}
+
+func TestMinCutMaxFlow2(t *testing.T) {
+	gr := GetGraph(
+		[]EdgeDefinition{
+			EdgeDefinition{1, 2, 5},
+			EdgeDefinition{1, 3, 5},
+			EdgeDefinition{2, 5, 3},
+			EdgeDefinition{2, 4, 6},
+			EdgeDefinition{3, 4, 3},
+			EdgeDefinition{3, 5, 1},
+			EdgeDefinition{4, 6, 6},
+			EdgeDefinition{5, 6, 6},
+		},
+		false,
+	)
+
+	maxFlow, _, cut := gr.MinCutMaxFlow(1, 6, 0.01)
+	if maxFlow != 9 {
+		t.Error("Expected max flow for the given graph: 9 but obtained:", maxFlow)
+	}
+
+	expectedCut := []*EdgeDefinition{
+		&EdgeDefinition{1, 2, 5},
+		&EdgeDefinition{3, 4, 3},
+		&EdgeDefinition{3, 5, 1},
+	}
+
+	for _, ec := range expectedCut {
+		found := false
+		for _, c := range cut {
+			if reflect.DeepEqual(ec, c) {
+				found = true
+			}
+		}
+		if !found {
+			t.Error("Expected cut:", ec, "not found")
+		}
 	}
 }
