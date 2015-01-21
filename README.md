@@ -1,4 +1,4 @@
-## package graphs - Go lang library that provides mathematical graph-theory algorithm implementations
+## package graphs - Go lang library that provides mathematical graph-theory algorithms
 ###import "github.com/alonsovidales/go_graph"
 
 [![GoDoc](https://godoc.org/github.com/alonsovidales/go_graph?status.png)](https://godoc.org/github.com/alonsovidales/go_graph)
