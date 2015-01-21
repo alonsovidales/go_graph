@@ -5,6 +5,7 @@
 
 
 This library implements the next graph algorithms:
+
 	- BFS: Breadth-first search. Can be used to find the shortest path between a vertex and the others: <http://en.wikipedia.org/wiki/Breadth-first_search>
 	- DFS: Depth-first search. As Breadth-first search, but using recursion, a common case of use could be search all the connected vertices to a given one< <http://en.wikipedia.org/wiki/Depth-first_search>
 	- Connected component: Using the BFS implementation searchs for all the sets of connected vertices: <http://en.wikipedia.org/wiki/Connected_component_%28graph_theory%29>
