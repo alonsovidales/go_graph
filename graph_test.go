@@ -7,34 +7,6 @@ import (
 	//"fmt"
 )
 
-/*func createRandomGraph(edges int64, undirected bool) (ug *Graph) {
-	ug = &Graph{
-		VertexEdges: make(map[uint64]map[uint64]int64),
-	}
-
-	for i := int64(0); i < edges; i++ {
-		from := uint64(rand.Int63() % edges)
-		to := uint64(rand.Int63() % edges)
-		if from != to {
-			if _, ok := ug.VertexEdges[from]; ok {
-				ug.VertexEdges[from][to] = int64(rand.Int63())
-			} else {
-				ug.VertexEdges[from] = map[uint64]int64{to: uint64(rand.Int63())}
-			}
-
-			if undirected {
-				if _, ok := ug.VertexEdges[to]; ok {
-					ug.VertexEdges[to][from] = int64(rand.Int63())
-				} else {
-					ug.VertexEdges[to] = map[uint64]int64{from: uint64(rand.Int63())}
-				}
-			}
-		}
-	}
-
-	return
-}*/
-
 // This test checks if we can get by DFS the two paths that connects all the
 // elements in two separate graphs without any connection between them
 func TestUndDFS(t *testing.T) {
