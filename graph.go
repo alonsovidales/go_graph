@@ -240,15 +240,17 @@ func (gr *Graph) ShortestPath(origin, dest uint64) (path []uint64, dist map[uint
 
 	path = []uint64{dest}
 	node := dist[dest]
-	for node.From != origin {
-		path = append(path, node.From)
-		node = dist[node.From]
-	}
-	path = append(path, origin)
-	for i := 0; i < len(path)/2; i++ {
-		path[i] ^= path[len(path)-i-1]
-		path[len(path)-i-1] ^= path[i]
-		path[i] ^= path[len(path)-i-1]
+	if _, ok := dist[dest]; ok {
+		for node.From != origin {
+			path = append(path, node.From)
+			node = dist[node.From]
+		}
+		path = append(path, origin)
+		for i := 0; i < len(path)/2; i++ {
+			path[i] ^= path[len(path)-i-1]
+			path[len(path)-i-1] ^= path[i]
+			path[i] ^= path[len(path)-i-1]
+		}
 	}
 
 	return
