@@ -1,9 +1,10 @@
 package graphs
 
 import (
-	"github.com/alonsovidales/go_fibanaccy_heap"
 	"math"
 	"sort"
+
+	"github.com/alonsovidales/go_fibanaccy_heap"
 )
 
 // Graph Data strcture used to represent a graph, the VertexEdges var
@@ -108,7 +109,7 @@ func GetGraph(edges []Edge, undirected bool) (ug *Graph) {
 // The precission param is usefull in order to find a max flow in graphs with
 // edges with float weights in order to avoid large execution times.
 // Ford-Fulkerson algorithm:
-// 	- http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
+//   - http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
 func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMinCut float64, flows map[uint64]map[uint64]float64, cut []*Edge) {
 	// This map will contain the reverse edge relations
 	undirEdges := make(map[uint64][]uint64)
@@ -134,6 +135,11 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 				flows[f][v] = 0.0
 			} else {
 				flows[f] = map[uint64]float64{v: 0.0}
+			}
+			if _, ok := flows[v]; ok {
+				flows[v][f] = 0.0
+			} else {
+				flows[v] = map[uint64]float64{f: 0.0}
 			}
 		}
 	}
@@ -258,9 +264,10 @@ func (gr *Graph) ShortestPath(origin, dest uint64) (path []uint64, dist map[uint
 
 // Mst Minimum Spanning Tree, Calculates the tree of edges who connects all the vertices with a minimun cost
 // This method uses the Kruskal's algorithm:
-//	- http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
+//   - http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
+//
 // An Union-find in order to detect cycles:
-//	- http://en.wikipedia.org/wiki/Disjoint-set_data_structure
+//   - http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 func (gr *Graph) Mst() (mst []Edge) {
 	var edgeToAdd, groupID uint64
 	mst = []Edge{}
@@ -356,7 +363,7 @@ func (gr *Graph) NewReversedGraph() (rev *Graph) {
 // is used as a set who groups the vertices by groups, the keys of the maps
 // are vertex number
 // The algorithm used is the Kosaraju-Sharir's algorithm:
-// 	- http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
+//   - http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
 func (gr *Graph) StronglyConnectedComponents() (components map[uint64]int64, compGroups []map[uint64]bool) {
 	currentGroup := int64(0)
 	components = make(map[uint64]int64)
@@ -640,9 +647,10 @@ func (gr *Graph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64
 // Dfs Finds all vertices connected to the "origin" vertex  and returns them as
 // an slice of vertices.
 // This method uses Depth-first search algorithm:
-//	- http://en.wikipedia.org/wiki/Depth-first_search
+//   - http://en.wikipedia.org/wiki/Depth-first_search
+//
 // The Tremaux's algorithm is used to perform this search:
-//	- http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
+//   - http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
 func (gr *Graph) Dfs(root uint64) (usedVertex map[uint64]bool) {
 	usedVertex = make(map[uint64]bool)
 	gr.dfs(root, usedVertex, nil, nil)
@@ -683,11 +691,9 @@ func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64)
 
 	f = path[0]
 	for _, t := range path[1:] {
-		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
-			flows[f][t] += toAdd
-		} else {
-			flows[t][f] -= toAdd
-		}
+		flows[f][t] += toAdd
+		flows[t][f] -= toAdd
+
 		f = t
 	}
 }
