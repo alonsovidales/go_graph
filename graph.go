@@ -1,12 +1,11 @@
 package graphs
 
 import (
-	"github.com/alonsovidales/go_fibanaccy_heap"
 	"math"
 	"sort"
 )
 
-// Graph Data strcture used to represent a graph, the VertexEdges var
+// Graph Data structure used to represent a graph, the VertexEdges var
 // is a map where each key is a vertex, and the value a map where the keys are
 // the vertices that can be reached from the main key vertex and the value the
 // weight for this edge, the Vertices property is used as a set who contains
@@ -105,24 +104,24 @@ func GetGraph(edges []Edge, undirected bool) (ug *Graph) {
 // path from the origin to the dest vertex removing this edges.
 // The sum of all the edges to be removed corresponds to the capacity between
 // the origin and dest nodes, the max flow between the two edges.
-// The precission param is usefull in order to find a max flow in graphs with
+// The precision param is useful in order to find a max flow in graphs with
 // edges with float weights in order to avoid large execution times.
 // Ford-Fulkerson algorithm:
-// 	- http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
+//   - http://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
 func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMinCut float64, flows map[uint64]map[uint64]float64, cut []*Edge) {
 	// This map will contain the reverse edge relations
-	undirEdges := make(map[uint64][]uint64)
+	undirEdges := make(map[uint64]map[uint64]struct{})
 	for f, dests := range gr.VertexEdges {
 		for t := range dests {
 			if _, ok := undirEdges[f]; !ok {
-				undirEdges[f] = []uint64{t}
+				undirEdges[f] = map[uint64]struct{}{t: {}}
 			} else {
-				undirEdges[f] = append(undirEdges[f], t)
+				undirEdges[f][t] = struct{}{}
 			}
 			if _, ok := undirEdges[t]; !ok {
-				undirEdges[t] = []uint64{f}
+				undirEdges[t] = map[uint64]struct{}{f: {}}
 			} else {
-				undirEdges[t] = append(undirEdges[t], f)
+				undirEdges[t][f] = struct{}{}
 			}
 		}
 	}
@@ -258,9 +257,10 @@ func (gr *Graph) ShortestPath(origin, dest uint64) (path []uint64, dist map[uint
 
 // Mst Minimum Spanning Tree, Calculates the tree of edges who connects all the vertices with a minimun cost
 // This method uses the Kruskal's algorithm:
-//	- http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
+//   - http://en.wikipedia.org/wiki/Kruskal%27s_algorithm
+//
 // An Union-find in order to detect cycles:
-//	- http://en.wikipedia.org/wiki/Disjoint-set_data_structure
+//   - http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 func (gr *Graph) Mst() (mst []Edge) {
 	var edgeToAdd, groupID uint64
 	mst = []Edge{}
@@ -356,7 +356,7 @@ func (gr *Graph) NewReversedGraph() (rev *Graph) {
 // is used as a set who groups the vertices by groups, the keys of the maps
 // are vertex number
 // The algorithm used is the Kosaraju-Sharir's algorithm:
-// 	- http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
+//   - http://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
 func (gr *Graph) StronglyConnectedComponents() (components map[uint64]int64, compGroups []map[uint64]bool) {
 	currentGroup := int64(0)
 	components = make(map[uint64]int64)
@@ -640,9 +640,10 @@ func (gr *Graph) Bfs(origin uint64) (edgeTo map[uint64]uint64, distTo map[uint64
 // Dfs Finds all vertices connected to the "origin" vertex  and returns them as
 // an slice of vertices.
 // This method uses Depth-first search algorithm:
-//	- http://en.wikipedia.org/wiki/Depth-first_search
+//   - http://en.wikipedia.org/wiki/Depth-first_search
+//
 // The Tremaux's algorithm is used to perform this search:
-//	- http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
+//   - http://en.wikipedia.org/wiki/Maze_solving_algorithm#Tr.C3.A9maux.27s_algorithm
 func (gr *Graph) Dfs(root uint64) (usedVertex map[uint64]bool) {
 	usedVertex = make(map[uint64]bool)
 	gr.dfs(root, usedVertex, nil, nil)
@@ -694,13 +695,13 @@ func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64)
 
 // Used for MinCutMaxFlow to calculate all the possible paths between two
 // points
-func (gr *Graph) maxFlow(orig, dest uint64, undirEdges map[uint64][]uint64, flows map[uint64]map[uint64]float64, visitedEdges map[uint64]bool, path []uint64) {
+func (gr *Graph) maxFlow(orig, dest uint64, undirEdges map[uint64]map[uint64]struct{}, flows map[uint64]map[uint64]float64, visitedEdges map[uint64]bool, path []uint64) {
 	if orig == dest {
 		gr.recalcFlows(path, flows)
 		return
 	}
 
-	for _, t := range undirEdges[orig] {
+	for t := range undirEdges[orig] {
 		if _, yetVisited := visitedEdges[t]; yetVisited {
 			continue
 		}
