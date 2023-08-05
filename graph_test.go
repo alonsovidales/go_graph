@@ -1,10 +1,10 @@
 package graphs
 
 import (
-	//"math/rand"
+	// "math/rand"
 	"reflect"
 	"testing"
-	//"fmt"
+	// "fmt"
 )
 
 // This test checks if we can get by DFS the two paths that connects all the
@@ -593,6 +593,47 @@ func TestMinCutMaxFlow2(t *testing.T) {
 		&Edge{1, 2, 5},
 		&Edge{3, 4, 3},
 		&Edge{3, 5, 1},
+	}
+
+	for _, ec := range expectedCut {
+		found := false
+		for _, c := range cut {
+			if reflect.DeepEqual(ec, c) {
+				found = true
+			}
+		}
+		if !found {
+			t.Error("Expected cut:", ec, "not found")
+		}
+	}
+}
+
+func TestMinCutMaxFlow3(t *testing.T) {
+	gr := GetGraph(
+		[]Edge{
+			Edge{0, 1, 16},
+			Edge{0, 2, 13},
+			Edge{1, 2, 10},
+			Edge{1, 3, 12},
+			Edge{2, 1, 4},
+			Edge{2, 4, 14},
+			Edge{3, 2, 9},
+			Edge{3, 5, 20},
+			Edge{4, 3, 7},
+			Edge{4, 5, 4},
+		},
+		false,
+	)
+
+	maxFlow, _, cut := gr.MinCutMaxFlow(0, 5, 0.01)
+	if maxFlow != 23 {
+		t.Error("Expected max flow for the given graph: 23 but obtained:", maxFlow)
+	}
+
+	expectedCut := []*Edge{
+		&Edge{4, 5, 4},
+		&Edge{4, 3, 7},
+		&Edge{1, 3, 12},
 	}
 
 	for _, ec := range expectedCut {

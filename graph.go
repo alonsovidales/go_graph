@@ -3,6 +3,8 @@ package graphs
 import (
 	"math"
 	"sort"
+
+	"github.com/alonsovidales/go_fibanaccy_heap"
 )
 
 // Graph Data structure used to represent a graph, the VertexEdges var
@@ -133,6 +135,11 @@ func (gr *Graph) MinCutMaxFlow(orig, dest uint64, precision float64) (maxFlowMin
 				flows[f][v] = 0.0
 			} else {
 				flows[f] = map[uint64]float64{v: 0.0}
+			}
+			if _, ok := flows[v]; ok {
+				flows[v][f] = 0.0
+			} else {
+				flows[v] = map[uint64]float64{f: 0.0}
 			}
 		}
 	}
@@ -684,11 +691,9 @@ func (gr *Graph) recalcFlows(path []uint64, flows map[uint64]map[uint64]float64)
 
 	f = path[0]
 	for _, t := range path[1:] {
-		if _, issetPath := gr.VertexEdges[f][t]; issetPath {
-			flows[f][t] += toAdd
-		} else {
-			flows[t][f] -= toAdd
-		}
+		flows[f][t] += toAdd
+		flows[t][f] -= toAdd
+
 		f = t
 	}
 }
